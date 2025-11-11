@@ -1,4 +1,5 @@
 // src/features/Planning/components/Step1PlotShape.jsx
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -13,14 +14,20 @@ import NonRectangular from "../../../../assets/Planning/Step1PlotShape/ir-rectun
 
 export default function Step1PlotShape({ formData, setFormData, onNext, onPrevious, onSubmit, isLastStep, isFirstStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
+  const navigate = useNavigate(); // hook to navigate programmatically
+
+  const onPreviousNavigate = () => {
+    // Navigate to the root route "/"
+    navigate('/');
+  };
 
   return (
-    <Box 
+    <Box
       h="600px"
       w="100%"
       maxW="400px"
       mx="auto"
-      display="flex" 
+      display="flex"
       flexDirection="column"
       justifyContent="space-between"
       px={4}
@@ -114,7 +121,7 @@ export default function Step1PlotShape({ formData, setFormData, onNext, onPrevio
       <Flex justify="space-between" gap={3}>
         {!isFirstStep && (
           <Button
-            onClick={onPrevious}
+            onClick={onPreviousNavigate}
             variant="solid"
             bg="white"
             color="cyan.600"
@@ -130,10 +137,10 @@ export default function Step1PlotShape({ formData, setFormData, onNext, onPrevio
               borderColor: "cyan.600",
             }}
           >
-            ← Previous
+            ← Back
           </Button>
         )}
-        
+
         <Button
           onClick={handleAction}
           isDisabled={!formData.shape}

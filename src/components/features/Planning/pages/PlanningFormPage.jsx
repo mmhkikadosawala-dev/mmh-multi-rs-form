@@ -174,7 +174,7 @@ export default function PlanningFormPage() {
           >
             <Box
               h="100%"
-              bg="teal.500"
+              bg="cyan.500"
               borderRadius="full"
               transition="width 0.3s ease"
               width={`${((step + 1) / steps.length) * 100}%`}
