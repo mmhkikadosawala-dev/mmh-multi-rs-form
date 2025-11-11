@@ -10,7 +10,7 @@ import {
   InputGroup,
   InputRightAddon,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
 
 function toPosNum(v, fallback) {
@@ -77,6 +77,7 @@ export default function Step4PlotSizeNonRectangular({
   const [currentScale, setCurrentScale] = useState(4);
   const [viewBox, setViewBox] = useState("0 0 400 400");
 
+  // Initialize default values only once
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -89,7 +90,7 @@ export default function Step4PlotSizeNonRectangular({
         offset: prev.size?.offset ?? 0,
       },
     }));
-  }, []);
+  }, [setFormData]); // Now includes setFormData
 
   useEffect(() => {
     const front = toPosNum(formData.size?.front, 70);
@@ -169,7 +170,7 @@ export default function Step4PlotSizeNonRectangular({
     setDragging(key);
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (dragging && points) {
       const back = toPosNum(formData.size?.back, 50);
       const front = toPosNum(formData.size?.front, 70);
@@ -183,7 +184,7 @@ export default function Step4PlotSizeNonRectangular({
         new_offset = points.tl.x + back / 2;
       }
 
-      // No clamping - allow free movement
+      // Allow full free movement - no clamping on release
       const bl_x = -front / 2;
       const br_x = front / 2;
       const tl_x = -back / 2 + new_offset;
@@ -192,14 +193,12 @@ export default function Step4PlotSizeNonRectangular({
       const dx_left = tl_x - bl_x;
       const dx_right = tr_x - br_x;
 
-      // Allow negative heights
       const h_left_sq = left ** 2 - dx_left ** 2;
       const h_right_sq = right ** 2 - dx_right ** 2;
-      
+
       const h_left = h_left_sq >= 0 ? Math.sqrt(h_left_sq) : -Math.sqrt(-h_left_sq);
       const h_right = h_right_sq >= 0 ? Math.sqrt(h_right_sq) : -Math.sqrt(-h_right_sq);
 
-      // Update points with correct heights
       setPoints({
         ...points,
         tl: { x: tl_x, y: h_left },
@@ -212,9 +211,10 @@ export default function Step4PlotSizeNonRectangular({
       });
     }
     setDragging(null);
-  };
+    setInitialDragX(null);
+  }, [dragging, points, formData, setFormData]);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!dragging || !points || initialDragX === null) return;
 
     const svg_rect = svgRef.current.getBoundingClientRect();
@@ -247,7 +247,7 @@ export default function Step4PlotSizeNonRectangular({
       tl: { x: new_tl_x, y: new_h_left },
       tr: { x: new_tr_x, y: new_h_right },
     });
-  };
+  }, [dragging, points, initialDragX, currentScale, formData]);
 
   const lineMidpoint = (p1, p2) => ({
     x: (p1.x + p2.x) / 2,
@@ -521,7 +521,7 @@ export default function Step4PlotSizeNonRectangular({
 
           {/* Instructions */}
           <Text fontSize="13px" color="gray.600" textAlign="center" mb={1}>
-            🖱️ Enter dimensions below or drag the top corners to adjust shape
+            Enter dimensions below or drag the top corners to adjust shape
           </Text>
 
           {/* Input Controls */}
@@ -660,7 +660,7 @@ export default function Step4PlotSizeNonRectangular({
             borderColor: "cyan.600",
           }}
         >
-          ← Previous
+          Previous
         </Button>
 
         <Button
@@ -679,7 +679,7 @@ export default function Step4PlotSizeNonRectangular({
             bg: "cyan.600",
           }}
         >
-          {isLastStep ? "Submit" : "Next →"}
+          {isLastStep ? "Submit" : "Next"}
         </Button>
       </Flex>
     </Box>
