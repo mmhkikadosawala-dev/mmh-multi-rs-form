@@ -1,4 +1,6 @@
+// src/features/Planning/components/Step11FloorSpaceRequirements.jsx
 import {
+  Box,
   Text,
   Radio,
   RadioGroup,
@@ -36,7 +38,7 @@ export default function Step11FloorSpaceRequirements({
     if (typeof formData?.numberOfFloors === "string") {
       if (formData.numberOfFloors.includes("+")) {
         const additional = parseInt(formData.numberOfFloors.match(/\d+/)[0]) || 0;
-        return 1 + additional; // Ground + additional floors
+        return 1 + additional;
       } else {
         return parseInt(formData.numberOfFloors.match(/\d+/)[0]) || 1;
       }
@@ -77,7 +79,7 @@ export default function Step11FloorSpaceRequirements({
     } else {
       setFormData({ ...formData, floorsData });
       if (isLastStep) onSubmit();
-      else onNext(); // This will proceed to step 12
+      else onNext();
     }
   };
 
@@ -100,174 +102,230 @@ export default function Step11FloorSpaceRequirements({
   }
 
   return (
-    <VStack minH="500px" px={4} maxW="400px" mx="auto" spacing={0} align="stretch">
-      {/* Scrollable content area directly (no outer box/card) */}
-      <VStack
-        height="600px"
+    <Box
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      px={4}
+      py={6}
+    >
+      {/* Scrollable Content Area */}
+      <Box 
+        flex="1" 
         overflowY="auto"
+        overflowX="hidden"
         pr={2}
-        spacing={4}
         css={{
-          "&::-webkit-scrollbar": { width: "5px" },
-          "&::-webkit-scrollbar-thumb": { background: "#e0e0e0", borderRadius: "6px" },
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#f1f1f1',
+            borderRadius: '10px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#cbd5e0',
+            borderRadius: '10px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#a0aec0',
+          },
         }}
       >
-        {/* Heading */}
-        <Text fontWeight="bold" color="blue.700" fontSize="lg" mb={2}>
-          {floorLabel(activeFloor)}
-        </Text>
-
-        {/* No of Master Bedrooms */}
-        <Flex align="center" mb={2}>
-          <Text w="60%" fontWeight="medium">
-            No. of Master Bedrooms
+        <VStack spacing={4} align="stretch">
+          {/* Heading */}
+          <Text fontWeight="600" color="gray.700" fontSize="16px" mb={1} letterSpacing="-0.01em">
+            {floorLabel(activeFloor)}
           </Text>
-          <Input
-            type="number"
-            min={0}
-            max={20}
-            size="sm"
-            value={current.masterBedrooms}
-            onChange={(e) =>
-              updateFloorField("masterBedrooms", e.target.value)
-            }
-            w="32%"
-            textAlign="center"
-          />
-        </Flex>
 
-        {/* With Attached Toilet */}
-        <Flex align="center" mb={2}>
-          <Radio
-            size="sm"
-            colorScheme="cyan"
-            isChecked={!!current.withAttached}
-            onChange={() =>
-              updateFloorField("withAttached", !current.withAttached)
-            }
-            mr={2}
-          />
-          <Text fontSize="sm" color="gray.700">
-            With Attached Toilet
-          </Text>
-        </Flex>
-
-        {/* Kitchen Yes/No */}
-        <Text mt={2} fontWeight="medium" fontSize="sm">
-          Kitchen
-        </Text>
-        <RadioGroup
-          value={current.kitchen}
-          onChange={(v) => updateFloorField("kitchen", v)}
-        >
-          <Flex gap={4}>
-            <Radio value="yes" colorScheme="cyan">
-              Yes
-            </Radio>
-            <Radio value="no" colorScheme="cyan">
-              No
-            </Radio>
+          {/* No of Master Bedrooms */}
+          <Flex align="center" gap={3}>
+            <Text flex="1" fontWeight="500" fontSize="14px" color="gray.700">
+              No. of Master Bedrooms
+            </Text>
+            <Input
+              type="number"
+              min={0}
+              max={20}
+              h="40px"
+              value={current.masterBedrooms}
+              onChange={(e) => updateFloorField("masterBedrooms", e.target.value)}
+              w="80px"
+              textAlign="center"
+              borderRadius="8px"
+              fontSize="14px"
+              fontWeight="500"
+              borderColor="gray.300"
+              _hover={{ borderColor: "cyan.400" }}
+              _focus={{
+                borderColor: "cyan.500",
+                boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+              }}
+            />
           </Flex>
-        </RadioGroup>
 
-        {/* Kitchen Type */}
-        {current.kitchen === "yes" && (
-          <>
-            <Text mt={2} mb={1} fontWeight="medium" fontSize="sm">
-              Kitchen type
+          {/* With Attached Toilet */}
+          <Flex align="center">
+            <Radio
+              size="md"
+              colorScheme="cyan"
+              isChecked={!!current.withAttached}
+              onChange={() => updateFloorField("withAttached", !current.withAttached)}
+              mr={2}
+            />
+            <Text fontSize="14px" color="gray.700" fontWeight="500">
+              With Attached Toilet
+            </Text>
+          </Flex>
+
+          {/* Kitchen Yes/No */}
+          <Box>
+            <Text mb={2} fontWeight="500" fontSize="14px" color="gray.700">
+              Kitchen
             </Text>
             <RadioGroup
-              value={current.kitchenType}
-              onChange={(v) => updateFloorField("kitchenType", v)}
+              value={current.kitchen}
+              onChange={(v) => updateFloorField("kitchen", v)}
             >
-              <Flex gap={5}>
-                <Radio value="open" colorScheme="cyan">
-                  Open
+              <Flex gap={6}>
+                <Radio value="yes" colorScheme="cyan" size="md">
+                  <Text fontSize="14px" fontWeight="500" color="gray.700">Yes</Text>
                 </Radio>
-                <Radio value="close" colorScheme="cyan">
-                  Close
+                <Radio value="no" colorScheme="cyan" size="md">
+                  <Text fontSize="14px" fontWeight="500" color="gray.700">No</Text>
                 </Radio>
               </Flex>
             </RadioGroup>
-            {/* Image (local asset) */}
-            <Image
-              src={FloorRequirement}
-              alt="kitchen"
-              w="100%"
-              h="110px"
-              objectFit="cover"
-              borderRadius="md"
-              mt={2}
-            />
-          </>
-        )}
+          </Box>
 
-        {/* Additional Required Spaces */}
-        <Text mt={4} mb={1} fontWeight="medium" fontSize="sm">
-          Additional Required Spaces:
-        </Text>
-        <CheckboxGroup
-          value={current.additionalSpaces}
-          onChange={handleCheckbox}
-        >
-          <SimpleGrid columns={2} spacing={2}>
-            {additionalSpaces.map((name) => (
-              <Checkbox
-                size="sm"
-                colorScheme="cyan"
-                value={name}
-                key={name}
+          {/* Kitchen Type */}
+          {current.kitchen === "yes" && (
+            <Box>
+              <Text mb={2} fontWeight="500" fontSize="14px" color="gray.700">
+                Kitchen type
+              </Text>
+              <RadioGroup
+                value={current.kitchenType}
+                onChange={(v) => updateFloorField("kitchenType", v)}
               >
-                {name}
-              </Checkbox>
-            ))}
-          </SimpleGrid>
-        </CheckboxGroup>
+                <Flex gap={6}>
+                  <Radio value="open" colorScheme="cyan" size="md">
+                    <Text fontSize="14px" fontWeight="500" color="gray.700">Open</Text>
+                  </Radio>
+                  <Radio value="close" colorScheme="cyan" size="md">
+                    <Text fontSize="14px" fontWeight="500" color="gray.700">Close</Text>
+                  </Radio>
+                </Flex>
+              </RadioGroup>
+              {/* Image */}
+              <Image
+                src={FloorRequirement}
+                alt="kitchen"
+                w="100%"
+                h="120px"
+                objectFit="cover"
+                borderRadius="12px"
+                mt={3}
+                border="1px solid"
+                borderColor="gray.200"
+              />
+            </Box>
+          )}
 
-        {/* Other (Please Specify) */}
-        <Textarea
-          mt={3}
-          placeholder="Other (Please Specify):"
-          value={current.otherSpaces}
-          onChange={(e) =>
-            updateFloorField("otherSpaces", e.target.value)
-          }
-          size="sm"
-          borderColor="gray.200"
-          borderRadius="md"
-          minH="40px"
-        />
-      </VStack>
+          {/* Additional Required Spaces */}
+          <Box>
+            <Text mb={3} fontWeight="500" fontSize="14px" color="gray.700">
+              Additional Required Spaces
+            </Text>
+            <CheckboxGroup
+              value={current.additionalSpaces}
+              onChange={handleCheckbox}
+            >
+              <SimpleGrid columns={2} spacing={3}>
+                {additionalSpaces.map((name) => (
+                  <Checkbox
+                    size="md"
+                    colorScheme="cyan"
+                    value={name}
+                    key={name}
+                  >
+                    <Text fontSize="14px" fontWeight="500" color="gray.700">
+                      {name}
+                    </Text>
+                  </Checkbox>
+                ))}
+              </SimpleGrid>
+            </CheckboxGroup>
+          </Box>
 
-      {/* Navigation Buttons */}
-      <Flex
-        justify="space-between"
-        mt={8}
-        maxW="400px"
-        mx="auto"
-        gap={3}
-      >
+          {/* Other (Please Specify) */}
+          <Box>
+            <Text mb={2} fontWeight="500" fontSize="14px" color="gray.700">
+              Other (Please Specify)
+            </Text>
+            <Textarea
+              placeholder="Enter additional spaces..."
+              value={current.otherSpaces}
+              onChange={(e) => updateFloorField("otherSpaces", e.target.value)}
+              borderColor="gray.300"
+              borderRadius="8px"
+              minH="80px"
+              fontSize="14px"
+              _hover={{ borderColor: "cyan.400" }}
+              _focus={{
+                borderColor: "cyan.500",
+                boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+              }}
+            />
+          </Box>
+        </VStack>
+      </Box>
+
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3} mt={4} flexShrink={0}>
         <Button
           onClick={handlePrev}
-          variant="outline"
-          borderColor="cyan.300"
-          color="cyan.700"
-          size="md"
+          variant="solid"
+          bg="white"
+          color="cyan.600"
+          border="1px solid"
+          borderColor="cyan.500"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
-          px={7}
+          fontSize="14px"
+          _hover={{
+            bg: "cyan.50",
+            borderColor: "cyan.600",
+          }}
         >
-          &#xab; Previous
+          ← Previous
         </Button>
+        
         <Button
           onClick={handleNext}
-          colorScheme="cyan"
-          size="md"
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
-          px={8}
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
         >
-          Next &#xbb;
+          Next →
         </Button>
       </Flex>
-    </VStack>
+    </Box>
   );
 }

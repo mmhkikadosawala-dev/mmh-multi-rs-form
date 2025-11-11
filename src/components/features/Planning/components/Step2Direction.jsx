@@ -8,7 +8,6 @@ import {
   Button,
   Image,
   SimpleGrid,
-  useBreakpointValue,
 } from "@chakra-ui/react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
 
@@ -24,66 +23,119 @@ const directionAngles = {
 };
 
 export default function Step2PlotDirection({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
-  const imageBoxSize = useBreakpointValue({ base: "160px", md: "200px" });
-  const containerMinHeight = useBreakpointValue({ base: "420px", md: "480px" });
-
   const handleAction = isLastStep ? onSubmit : onNext;
 
   return (
     <Box
-      minHeight={containerMinHeight}
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
       display="flex"
       flexDirection="column"
       justifyContent="space-between"
       px={4}
+      py={6}
     >
-      {/* Compass */}
-      <Flex justify="center" mt={2} direction="column" align="center">
-        <Text mb={2} fontWeight="500" fontSize="sm" color="gray.700">
-          Plot Direction Compass
-        </Text>
-        <Box
-          boxSize={imageBoxSize}
-          transform={`rotate(${directionAngles[formData.direction] || 0}deg)`}
-          transition="transform 0.3s ease"
+      {/* Content Area */}
+      <Box>
+        {/* Compass Section */}
+        <Flex justify="center" direction="column" align="center" mb={4}>
+          <Text mb={3} fontWeight="600" fontSize="16px" color="gray.700" letterSpacing="-0.01em">
+            Plot Direction Compass
+          </Text>
+          <Box
+            boxSize="180px"
+            transform={`rotate(${directionAngles[formData.direction] || 0}deg)`}
+            transition="transform 0.4s ease-in-out"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Image 
+              src={CompassImage} 
+              alt="Rotating Compass" 
+              boxSize="100%" 
+              objectFit="contain" 
+            />
+          </Box>
+        </Flex>
+
+        {/* Directions Grid */}
+        <RadioGroup
+          onChange={(value) => setFormData({ ...formData, direction: value })}
+          value={formData.direction}
         >
-          <Image src={CompassImage} alt="Rotating Compass" boxSize="100%" objectFit="contain" />
-        </Box>
-      </Flex>
+          <SimpleGrid columns={2} spacing={3} maxW="340px" mx="auto">
+            {Object.keys(directionAngles).map((dir) => (
+              <Box
+                key={dir}
+                p={2.5}
+                bg={formData.direction === dir ? "cyan.50" : "white"}
+                border="1px solid"
+                borderColor={formData.direction === dir ? "cyan.500" : "gray.200"}
+                borderRadius="8px"
+                transition="all 0.2s ease"
+                cursor="pointer"
+                _hover={{
+                  borderColor: "cyan.300",
+                  bg: "cyan.50",
+                }}
+              >
+                <Radio value={dir} size="md" colorScheme="cyan">
+                  <Text fontSize="13px" fontWeight="500" color="gray.700">
+                    {dir.charAt(0).toUpperCase() + dir.slice(1).replace("-", " - ")}
+                  </Text>
+                </Radio>
+              </Box>
+            ))}
+          </SimpleGrid>
+        </RadioGroup>
+      </Box>
 
-      {/* Directions Grid */}
-      <RadioGroup
-        onChange={(value) => setFormData({ ...formData, direction: value })}
-        value={formData.direction}
-      >
-        <SimpleGrid columns={2} spacing={4} maxWidth="320px" mx="auto" mt={4}>
-          {Object.keys(directionAngles).map((dir) => (
-            <Radio key={dir} value={dir} size="sm" colorScheme="teal">
-              <Text fontSize="xs">
-                {dir.charAt(0).toUpperCase() + dir.slice(1).replace("-", " ")}
-              </Text>
-            </Radio>
-          ))}
-        </SimpleGrid>
-      </RadioGroup>
-
-      {/* Navigation Buttons */}
-      <Flex justify="space-between" mt={6} maxWidth="320px" mx="auto" w="100%">
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3}>
         <Button
-          colorScheme="gray"
-          variant="outline"
           onClick={onBack}
-          size="sm"
+          variant="solid"
+          bg="white"
+          color="cyan.600"
+          border="1px solid"
+          borderColor="cyan.500"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          _hover={{
+            bg: "cyan.50",
+            borderColor: "cyan.600",
+          }}
         >
           ← Previous
         </Button>
+        
         <Button
-          colorScheme="teal"
           onClick={handleAction}
           isDisabled={!formData.direction}
-          size="sm"
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
+          }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
         </Button>

@@ -5,7 +5,6 @@ import {
   Text,
   Input,
   Image,
-  useBreakpointValue,
   Button,
 } from "@chakra-ui/react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
@@ -21,9 +20,6 @@ function getSideImage(side, peripheries) {
 }
 
 export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
-  const imageBoxSize = useBreakpointValue({ base: "200px", md: "240px" });
-  const containerMinHeight = useBreakpointValue({ base: "440px", md: "500px" });
-
   const handleWidthChange = e => setFormData({ ...formData, size: { ...formData.size, width: e.target.value } });
   const handleDepthChange = e => setFormData({ ...formData, size: { ...formData.size, depth: e.target.value } });
 
@@ -34,148 +30,227 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
   const handleAction = isLastStep ? onSubmit : onNext;
 
   return (
-    <Box minHeight={containerMinHeight}>
-      {/* Top Inputs */}
-      <Flex gap={4} mb={4} justify="center" align="center">
-        <Box>
-          <Text fontSize="sm" mb={1} color="gray.600">
-            Plot Width
-          </Text>
-          <Flex align="center">
-            <Input
-              value={formData.size.width || ''}
-              onChange={handleWidthChange}
-              width="60px"
-              size="sm"
-              borderRadius="md"
-              fontSize="sm"
-              mr={2}
-              textAlign="center"
-              type="number"
-              min="0"
-            />
-            <Text fontSize="sm" color="gray.500">
-              feet
+    <Box
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      px={4}
+      py={6}
+    >
+      {/* Content Area */}
+      <Box>
+        {/* Top Input Section */}
+        <Flex 
+          gap={5} 
+          mb={5} 
+          justify="center" 
+          align="center"
+          bg="white"
+          p={4}
+          borderRadius="12px"
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          <Box>
+            <Text 
+              fontSize="13px" 
+              mb={2} 
+              color="gray.600"
+              fontWeight="600"
+              letterSpacing="-0.01em"
+            >
+              Plot Width
             </Text>
-          </Flex>
-        </Box>
-        <Box>
-          <Text fontSize="sm" mb={1} color="gray.600">
-            Plot depth
-          </Text>
-          <Flex align="center">
-            <Input
-              value={formData.size.depth || ''}
-              onChange={handleDepthChange}
-              width="60px"
-              size="sm"
-              borderRadius="md"
-              fontSize="sm"
-              mr={2}
-              textAlign="center"
-              type="number"
-              min="0"
-            />
-            <Text fontSize="sm" color="gray.500">
-              feet
+            <Flex align="center" gap={2}>
+              <Input
+                value={formData.size.width || ''}
+                onChange={handleWidthChange}
+                width="70px"
+                h="40px"
+                borderRadius="8px"
+                fontSize="14px"
+                textAlign="center"
+                type="number"
+                min="0"
+                fontWeight="500"
+                borderColor="gray.300"
+                _hover={{
+                  borderColor: "cyan.400",
+                }}
+                _focus={{
+                  borderColor: "cyan.500",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                }}
+              />
+              <Text fontSize="13px" color="gray.600" fontWeight="500">
+                feet
+              </Text>
+            </Flex>
+          </Box>
+
+          <Box>
+            <Text 
+              fontSize="13px" 
+              mb={2} 
+              color="gray.600"
+              fontWeight="600"
+              letterSpacing="-0.01em"
+            >
+              Plot Depth
             </Text>
-          </Flex>
-        </Box>
-      </Flex>
+            <Flex align="center" gap={2}>
+              <Input
+                value={formData.size.depth || ''}
+                onChange={handleDepthChange}
+                width="70px"
+                h="40px"
+                borderRadius="8px"
+                fontSize="14px"
+                textAlign="center"
+                type="number"
+                min="0"
+                fontWeight="500"
+                borderColor="gray.300"
+                _hover={{
+                  borderColor: "cyan.400",
+                }}
+                _focus={{
+                  borderColor: "cyan.500",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                }}
+              />
+              <Text fontSize="13px" color="gray.600" fontWeight="500">
+                feet
+              </Text>
+            </Flex>
+          </Box>
+        </Flex>
 
-      {/* Compass & Images - Same positioning as your original code */}
-      <Box position="relative" height={imageBoxSize} mb={6} mx="auto" maxWidth="350px">
-        {/* Center Compass */}
-        <Image
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-          src={CompassImage}
-          width="140px"
-          height="140px"
-          zIndex={10}
-        />
-
-        {/* Bottom Fixed Road */}
-        <Image
-          position="absolute"
-          bottom="12px"
-          left="50%"
-          transform="translateX(-50%)"
-          src={RoadImage}
-          width="120px"
-          height="34px"
-          objectFit="cover"
-        />
-
-        {/* Top (Back) */}
-        {backImage && (
+        {/* Compass & Images */}
+        <Box 
+          position="relative" 
+          height="200px" 
+          mb={4} 
+          mx="auto" 
+          maxWidth="280px"
+          bg="gray.50"
+          borderRadius="12px"
+          p={4}
+        >
+          {/* Center Compass */}
           <Image
             position="absolute"
-            top="12px"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            src={CompassImage}
+            width="110px"
+            height="110px"
+            zIndex={10}
+          />
+
+          {/* Bottom Fixed Road */}
+          <Image
+            position="absolute"
+            bottom="16px"
             left="50%"
             transform="translateX(-50%)"
-            src={backImage}
-            width="120px"
-            height="34px"
+            src={RoadImage}
+            width="90px"
+            height="28px"
             objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
           />
-        )}
 
-        {/* Left */}
-        {leftImage && (
-          <Image
-            position="absolute"
-            left="12px"
-            top="50%"
-            transform="translateY(-50%) rotate(-90deg)"
-            transformOrigin="center"
-            src={leftImage}
-            width="120px"
-            height="34px"
-            objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
-          />
-        )}
+          {/* Top (Back) */}
+          {backImage && (
+            <Image
+              position="absolute"
+              top="16px"
+              left="50%"
+              transform="translateX(-50%)"
+              src={backImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
 
-        {/* Right */}
-        {rightImage && (
-          <Image
-            position="absolute"
-            right="12px"
-            top="50%"
-            transform="translateY(-50%) rotate(90deg)"
-            transformOrigin="center"
-            src={rightImage}
-            width="120px"
-            height="34px"
-            objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
-          />
-        )}
+          {/* Left */}
+          {leftImage && (
+            <Image
+              position="absolute"
+              left="16px"
+              top="50%"
+              transform="translateY(-50%) rotate(-90deg)"
+              transformOrigin="center"
+              src={leftImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
+
+          {/* Right */}
+          {rightImage && (
+            <Image
+              position="absolute"
+              right="16px"
+              top="50%"
+              transform="translateY(-50%) rotate(90deg)"
+              transformOrigin="center"
+              src={rightImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
+        </Box>
       </Box>
 
-      {/* Navigation */}
-      <Flex justifyContent="space-between" mt={6} maxWidth="500px" mx="auto" px={4}>
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3} flexShrink={0}>
         <Button
           onClick={onBack}
-          variant="outline"
-          colorScheme="gray"
-          size="sm"
+          variant="solid"
+          bg="white"
+          color="cyan.600"
+          border="1px solid"
+          borderColor="cyan.500"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          _hover={{
+            bg: "cyan.50",
+            borderColor: "cyan.600",
+          }}
         >
           ← Previous
         </Button>
+        
         <Button
           onClick={handleAction}
-          colorScheme="teal"
-          size="sm"
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
         </Button>

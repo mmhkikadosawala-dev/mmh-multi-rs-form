@@ -66,10 +66,9 @@ export default function PlanningFormPage() {
 
   const storeData = async (data) => {
     console.log('Storing data to database:', data);
-    // Check if running in browser
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('formData', JSON.stringify(data));
-    }
+    // Placeholder for API call to store data in database
+    // In future: await fetch('/api/store', { method: 'POST', body: JSON.stringify(data) });
+    localStorage.setItem('formData', JSON.stringify(data)); // Temporary storage
   };
 
   const nextStep = async () => {

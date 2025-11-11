@@ -7,7 +7,6 @@ import {
   RadioGroup,
   Stack,
   Image,
-  useBreakpointValue,
   Button,
 } from "@chakra-ui/react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
@@ -29,9 +28,6 @@ function getSideImage(side, peripheries) {
 }
 
 export default function Step3Peripheries({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
-  const imageBoxSize = useBreakpointValue({ base: "200px", md: "240px" }); // Increased compass section height
-  const containerMinHeight = useBreakpointValue({ base: "440px", md: "500px" });
-
   const updatePeriphery = (side, value) => {
     setFormData({
       ...formData,
@@ -46,135 +42,202 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
   const handleAction = isLastStep ? onSubmit : onNext;
 
   return (
-    <Box minHeight={containerMinHeight}>
-      {/* Compass & Images */}
-      <Box position="relative" height={imageBoxSize} mb={6} mx="auto" maxWidth="350px">
-        {/* Center Compass */}
-        <Image
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-          src={CompassImage}
-          width="140px"
-          height="140px"
-          zIndex={10}
-        />
-
-        {/* Bottom Fixed Road */}
-        <Image
-          position="absolute"
-          bottom="12px"
-          left="50%"
-          transform="translateX(-50%)"
-          src={RoadImage}
-          width="120px"
-          height="34px"
-          objectFit="cover"
-        />
-
-        {/* Top (Back) */}
-        {backImage && (
+    <Box
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      px={4}
+      py={6}
+    >
+      {/* Content Area */}
+      <Box>
+        {/* Compass & Images */}
+        <Box 
+          position="relative" 
+          height="200px" 
+          mb={5} 
+          mx="auto" 
+          maxWidth="280px"
+          bg="gray.50"
+          borderRadius="12px"
+          p={4}
+        >
+          {/* Center Compass */}
           <Image
             position="absolute"
-            top="12px"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            src={CompassImage}
+            width="110px"
+            height="110px"
+            zIndex={10}
+          />
+
+          {/* Bottom Fixed Road */}
+          <Image
+            position="absolute"
+            bottom="16px"
             left="50%"
             transform="translateX(-50%)"
-            src={backImage}
-            width="120px"
-            height="34px"
+            src={RoadImage}
+            width="90px"
+            height="28px"
             objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
           />
-        )}
 
-        {/* Left */}
-        {leftImage && (
-          <Image
-            position="absolute"
-            left="12px"
-            top="50%"
-            transform="translateY(-50%) rotate(-90deg)"
-            transformOrigin="center"
-            src={leftImage}
-            width="120px"
-            height="34px"
-            objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
-          />
-        )}
+          {/* Top (Back) */}
+          {backImage && (
+            <Image
+              position="absolute"
+              top="16px"
+              left="50%"
+              transform="translateX(-50%)"
+              src={backImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
 
-        {/* Right */}
-        {rightImage && (
-          <Image
-            position="absolute"
-            right="12px"
-            top="50%"
-            transform="translateY(-50%) rotate(90deg)"
-            transformOrigin="center"
-            src={rightImage}
-            width="120px"
-            height="34px"
-            objectFit="cover"
-            opacity={1}
-            boxShadow="sm"
-          />
-        )}
+          {/* Left */}
+          {leftImage && (
+            <Image
+              position="absolute"
+              left="16px"
+              top="50%"
+              transform="translateY(-50%) rotate(-90deg)"
+              transformOrigin="center"
+              src={leftImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
+
+          {/* Right */}
+          {rightImage && (
+            <Image
+              position="absolute"
+              right="16px"
+              top="50%"
+              transform="translateY(-50%) rotate(90deg)"
+              transformOrigin="center"
+              src={rightImage}
+              width="90px"
+              height="28px"
+              objectFit="cover"
+              opacity={1}
+            />
+          )}
+        </Box>
+
+        {/* Radio Group Section - Broader & Comfortable */}
+        <Stack spacing={4} mx="auto" w="100%">
+          {sides.map(({ key, label }) => (
+            <Box key={key}>
+              <Text 
+                fontWeight="600" 
+                fontSize="14px" 
+                mb={2.5} 
+                color="gray.700"
+                letterSpacing="-0.01em"
+              >
+                Select what is in your {label}
+              </Text>
+              <RadioGroup
+                onChange={(value) => updatePeriphery(key, value)}
+                value={formData.peripheries[key] || ""}
+              >
+                <Flex gap={6} align="center" flexWrap="wrap">
+                  <Radio value="Neighbour Plot" colorScheme="cyan" size="md">
+                    <Flex align="center" gap={2.5}>
+                      <Box 
+                        w="26px" 
+                        h="26px" 
+                        bg="orange.100" 
+                        borderRadius="6px" 
+                        display="flex" 
+                        alignItems="center" 
+                        justifyContent="center"
+                        fontSize="15px"
+                      >
+                        🏠
+                      </Box>
+                      <Text fontSize="14px" color="gray.700" fontWeight="500">
+                        Neighbour Plot
+                      </Text>
+                    </Flex>
+                  </Radio>
+
+                  <Radio value="Road" colorScheme="cyan" size="md">
+                    <Flex align="center" gap={2.5}>
+                      <Box 
+                        w="26px" 
+                        h="26px" 
+                        bg="gray.800" 
+                        borderRadius="6px" 
+                        display="flex" 
+                        alignItems="center" 
+                        justifyContent="center"
+                      >
+                        <Box w="16px" h="2px" bg="white" borderRadius="full" />
+                      </Box>
+                      <Text fontSize="14px" color="gray.700" fontWeight="500">
+                        Road
+                      </Text>
+                    </Flex>
+                  </Radio>
+                </Flex>
+              </RadioGroup>
+            </Box>
+          ))}
+        </Stack>
       </Box>
 
-      {/* Radio Group Section */}
-      <Stack spacing={5} maxWidth="500px" mx="auto" px={4}>
-        {sides.map(({ key, label }) => (
-          <Box key={key}>
-            <Text fontWeight="500" fontSize="sm" mb={2} color="gray.700">
-              Select what is in your {label}
-            </Text>
-            <RadioGroup
-              onChange={(value) => updatePeriphery(key, value)}
-              value={formData.peripheries[key] || ""}
-            >
-              <Flex gap={6} align="center">
-                <Radio value="Neighbour Plot" colorScheme="teal" size="sm">
-                  <Flex align="center" gap={2}>
-                    <Box w="20px" h="20px" bg="orange.100" borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-                      🏠
-                    </Box>
-                    <Text fontSize="xs" color="gray.700">Neighbour Plot</Text>
-                  </Flex>
-                </Radio>
-
-                <Radio value="Road" colorScheme="teal" size="sm">
-                  <Flex align="center" gap={2}>
-                    <Box w="20px" h="20px" bg="gray.800" borderRadius="md" display="flex" alignItems="center" justifyContent="center">
-                      <Box w="14px" h="2px" bg="white" borderRadius="full" />
-                    </Box>
-                    <Text fontSize="xs" color="gray.700">Road</Text>
-                  </Flex>
-                </Radio>
-              </Flex>
-            </RadioGroup>
-          </Box>
-        ))}
-      </Stack>
-
-      {/* Navigation */}
-      <Flex justifyContent="space-between" mt={6} maxWidth="500px" mx="auto" px={4}>
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3} flexShrink={0}>
         <Button
           onClick={onBack}
-          variant="outline"
-          colorScheme="gray"
-          size="sm"
+          variant="solid"
+          bg="white"
+          color="cyan.600"
+          border="1px solid"
+          borderColor="cyan.500"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          _hover={{
+            bg: "cyan.50",
+            borderColor: "cyan.600",
+          }}
         >
           ← Previous
         </Button>
+        
         <Button
           onClick={handleAction}
-          colorScheme="teal"
-          size="sm"
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
         </Button>

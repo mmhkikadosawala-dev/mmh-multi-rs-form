@@ -7,109 +7,154 @@ import {
   Stack,
   Text,
   Button,
-  useBreakpointValue,
 } from "@chakra-ui/react";
 import RectangularImage from "../../../../assets/Planning/Step1PlotShape/rectangular 1.png";
 import NonRectangular from "../../../../assets/Planning/Step1PlotShape/ir-rectungalar 1.png";
 
-export default function Step1PlotShape({ formData, setFormData, onNext, onSubmit, isLastStep }) {
-  const imageBoxHeight = useBreakpointValue({ base: "160px", md: "200px" });
-  const imageBoxWidth = useBreakpointValue({ base: "140px", md: "180px" });
-  const containerMinHeight = useBreakpointValue({ base: "420px", md: "480px" });
-
-  const rectangularImage = (
-    <img
-      src={RectangularImage}
-      alt="Rectangular Plot"
-      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-    />
-  );
-
-  const irregularImage = (
-    <img
-      src={NonRectangular}
-      alt="Irregular Plot"
-      style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-    />
-  );
-
+export default function Step1PlotShape({ formData, setFormData, onNext, onPrevious, onSubmit, isLastStep, isFirstStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
 
   return (
-    <Box minHeight={containerMinHeight} display="flex" flexDirection="column" justifyContent="space-between" px={4}>
-      <RadioGroup
-        onChange={(value) => setFormData({ ...formData, shape: value })}
-        value={formData.shape}
-      >
-        <Stack direction="column" spacing={6}>
-          {/* Rectangular Option */}
-          <Box>
-            <Radio
-              value="rectangular"
-              colorScheme="teal"
-              mb={2}
-              size="sm"
-            >
-              <Text fontSize="sm" fontWeight="500" color="gray.700">
-                Rectangular / Regular
-              </Text>
-            </Radio>
-            <Flex
-              align="center"
-              justify="center"
-              direction="column"
-              border="1px"
-              borderColor={formData.shape === "rectangular" ? "teal.500" : "gray.200"}
-              borderWidth={formData.shape === "rectangular" ? "2px" : "1px"}
-              p={3}
-              rounded="md"
-              height={imageBoxHeight}
-              width={imageBoxWidth}
-              mx="auto"
-            >
-              {rectangularImage}
-            </Flex>
-          </Box>
+    <Box 
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
+      display="flex" 
+      flexDirection="column"
+      justifyContent="space-between"
+      px={4}
+      py={6}
+    >
+      {/* Content Area */}
+      <Box>
+        <RadioGroup
+          onChange={(value) => setFormData({ ...formData, shape: value })}
+          value={formData.shape}
+        >
+          <Stack direction="column" spacing={6}>
+            {/* Rectangular Option */}
+            <Box>
+              <Radio
+                value="rectangular"
+                colorScheme="cyan"
+                mb={3}
+                size="md"
+              >
+                <Text fontSize="16px" fontWeight="600" color="gray.700" letterSpacing="-0.01em">
+                  Rectangular / Regular
+                </Text>
+              </Radio>
+              <Flex
+                align="center"
+                justify="center"
+                border="2px solid"
+                borderColor={formData.shape === "rectangular" ? "cyan.500" : "gray.200"}
+                bg={formData.shape === "rectangular" ? "cyan.50" : "white"}
+                p={4}
+                borderRadius="12px"
+                height="200px"
+                width="180px"
+                mx="auto"
+                transition="all 0.2s ease"
+                _hover={{
+                  borderColor: "cyan.300",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                <img
+                  src={RectangularImage}
+                  alt="Rectangular Plot"
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              </Flex>
+            </Box>
 
-          {/* Irregular Option */}
-          <Box>
-            <Radio
-              value="irregular"
-              colorScheme="teal"
-              mb={2}
-              size="sm"
-            >
-              <Text fontSize="sm" fontWeight="500" color="gray.700">
-                Non-Rectangular
-              </Text>
-            </Radio>
-            <Flex
-              align="center"
-              justify="center"
-              direction="column"
-              border="1px"
-              borderColor={formData.shape === "irregular" ? "teal.500" : "gray.200"}
-              borderWidth={formData.shape === "irregular" ? "2px" : "1px"}
-              p={3}
-              rounded="md"
-              height={imageBoxHeight}
-              width={imageBoxWidth}
-              mx="auto"
-            >
-              {irregularImage}
-            </Flex>
-          </Box>
-        </Stack>
-      </RadioGroup>
+            {/* Irregular Option */}
+            <Box>
+              <Radio
+                value="irregular"
+                colorScheme="cyan"
+                mb={3}
+                size="md"
+              >
+                <Text fontSize="16px" fontWeight="600" color="gray.700" letterSpacing="-0.01em">
+                  Non-Rectangular
+                </Text>
+              </Radio>
+              <Flex
+                align="center"
+                justify="center"
+                border="2px solid"
+                borderColor={formData.shape === "irregular" ? "cyan.500" : "gray.200"}
+                bg={formData.shape === "irregular" ? "cyan.50" : "white"}
+                p={4}
+                borderRadius="12px"
+                height="200px"
+                width="180px"
+                mx="auto"
+                transition="all 0.2s ease"
+                _hover={{
+                  borderColor: "cyan.300",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                <img
+                  src={NonRectangular}
+                  alt="Irregular Plot"
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              </Flex>
+            </Box>
+          </Stack>
+        </RadioGroup>
+      </Box>
 
-      {/* Navigation */}
-      <Flex justify="flex-end" mt={6}>
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3}>
+        {!isFirstStep && (
+          <Button
+            onClick={onPrevious}
+            variant="solid"
+            bg="white"
+            color="cyan.600"
+            border="1px solid"
+            borderColor="cyan.500"
+            borderRadius="6px"
+            minW="100px"
+            h="40px"
+            fontWeight="500"
+            fontSize="14px"
+            _hover={{
+              bg: "cyan.50",
+              borderColor: "cyan.600",
+            }}
+          >
+            ← Previous
+          </Button>
+        )}
+        
         <Button
-          colorScheme="teal"
           onClick={handleAction}
           isDisabled={!formData.shape}
-          size="sm"
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
           fontWeight="500"
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
+          }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
         </Button>

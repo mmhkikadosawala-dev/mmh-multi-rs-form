@@ -1,10 +1,9 @@
-
+// src/features/Planning/components/Step7MarkSetbacks.jsx
 import {
   Box,
   Flex,
   Text,
   Input,
-  useBreakpointValue,
   Button,
   Heading,
   VStack,
@@ -22,9 +21,6 @@ export default function Step7MarkSetbacks({
   onBack,
   isLastStep,
 }) {
-  const containerMinHeight = useBreakpointValue({ base: "500px", md: "600px" });
-  const imageBoxSize = useBreakpointValue({ base: "200px", md: "240px" });
-
   const svgRef = useRef(null);
   const scaleRef = useRef({ shiftX: 0, shiftY: 0, finalScale: 1 });
   const [modelPoints, setModelPoints] = useState(null);
@@ -132,9 +128,9 @@ export default function Step7MarkSetbacks({
     const setback = 3;
     const centerX = (bounding.minX + bounding.maxX) / 2;
     const centerY = (bounding.minY + bounding.maxY) / 2;
-    const availableW = totalW - (setback * 2);
-    const availableH = totalH - (setback * 2);
-    const size = Math.min(availableW, availableH) * 0.98; // Increased to 98% for prominence
+    const availableW = totalW - setback * 2;
+    const availableH = totalH - setback * 2;
+    const size = Math.min(availableW, availableH) * 0.98;
     const half = size / 2;
 
     const initialSquare = [
@@ -202,7 +198,7 @@ export default function Step7MarkSetbacks({
       setDragging(true);
       setIsInteracting(true);
     },
-    [getModelFromMouse, getModelFromTouch, buildingPoints]
+    [getModelFromMouse, buildingPoints]
   );
 
   // Handle point dragging
@@ -223,7 +219,7 @@ export default function Step7MarkSetbacks({
         setGapInputs(Array(8).fill(""));
       }
     },
-    [dragging, dragPointIndex, bounding, getModelFromMouse, getModelFromTouch, dragOffset, buildingPoints, isPointValid]
+    [dragging, dragPointIndex, bounding, getModelFromMouse, dragOffset, buildingPoints, isPointValid]
   );
 
   // Finish interaction
@@ -291,19 +287,19 @@ export default function Step7MarkSetbacks({
     if (!modelPoints || buildingPoints.length === 0) return [];
 
     const plotSegments = [
-      [modelPoints.tl, modelPoints.tr], // top
-      [modelPoints.tr, modelPoints.br], // right
-      [modelPoints.br, modelPoints.bl], // bottom
-      [modelPoints.bl, modelPoints.tl], // left
+      [modelPoints.tl, modelPoints.tr],
+      [modelPoints.tr, modelPoints.br],
+      [modelPoints.br, modelPoints.bl],
+      [modelPoints.bl, modelPoints.tl],
     ];
 
-    const points = buildingPoints; // 0: tl, 1: tr, 2: br, 3: bl
+    const points = buildingPoints;
 
     const mids = [
-      { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 }, // mid-top
-      { x: (points[1].x + points[2].x) / 2, y: (points[1].y + points[2].y) / 2 }, // mid-right
-      { x: (points[2].x + points[3].x) / 2, y: (points[2].y + points[3].y) / 2 }, // mid-bottom
-      { x: (points[3].x + points[0].x) / 2, y: (points[3].y + points[0].y) / 2 }, // mid-left
+      { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 },
+      { x: (points[1].x + points[2].x) / 2, y: (points[1].y + points[2].y) / 2 },
+      { x: (points[2].x + points[3].x) / 2, y: (points[2].y + points[3].y) / 2 },
+      { x: (points[3].x + points[0].x) / 2, y: (points[3].y + points[0].y) / 2 },
     ];
 
     const gapPoints = [
@@ -345,10 +341,10 @@ export default function Step7MarkSetbacks({
       if (isNaN(gapValue) || gapValue < 0) return;
 
       const plotSegments = [
-        [modelPoints.tl, modelPoints.tr], // top
-        [modelPoints.tr, modelPoints.br], // right
-        [modelPoints.br, modelPoints.bl], // bottom
-        [modelPoints.bl, modelPoints.tl], // left
+        [modelPoints.tl, modelPoints.tr],
+        [modelPoints.tr, modelPoints.br],
+        [modelPoints.br, modelPoints.bl],
+        [modelPoints.bl, modelPoints.tl],
       ];
 
       const newPoints = [...buildingPoints];
@@ -375,10 +371,10 @@ export default function Step7MarkSetbacks({
       } else {
         const midIndex = index - 4;
         const pointIndices = [
-          [0, 1], // mid-top
-          [1, 2], // mid-right
-          [2, 3], // mid-bottom
-          [3, 0], // mid-left
+          [0, 1],
+          [1, 2],
+          [2, 3],
+          [3, 0],
         ][midIndex];
         const p1 = buildingPoints[pointIndices[0]];
         const p2 = buildingPoints[pointIndices[1]];
@@ -456,7 +452,6 @@ export default function Step7MarkSetbacks({
         style={{ touchAction: "none", border: "1px solid #e2e8f0", borderRadius: "8px" }}
         onTouchStart={(e) => e.preventDefault()}
       >
-        {/* Outer plot polygon */}
         <polygon
           points={`${screenPlotPoints.tl.x},${screenPlotPoints.tl.y} ${screenPlotPoints.tr.x},${screenPlotPoints.tr.y} ${screenPlotPoints.br.x},${screenPlotPoints.br.y} ${screenPlotPoints.bl.x},${screenPlotPoints.bl.y}`}
           fill="rgba(229, 231, 235, 0.4)"
@@ -465,19 +460,10 @@ export default function Step7MarkSetbacks({
           strokeDasharray="5,5"
         />
 
-        {/* Plot boundary label */}
-        <text
-          x={viewW / 2}
-          y={25}
-          textAnchor="middle"
-          fontSize="12"
-          fontWeight="600"
-          fill="#64748b"
-        >
+        <text x={viewW / 2} y={25} textAnchor="middle" fontSize="12" fontWeight="600" fill="#64748b">
           Plot Boundary
         </text>
 
-        {/* Gap lines from building points to plot boundary */}
         {currentGaps.map((gap, index) => {
           const p1 = toScreen(gap.point);
           const p2 = toScreen(gap.closestPoint);
@@ -491,7 +477,7 @@ export default function Step7MarkSetbacks({
                 x2={p2.x}
                 y2={p2.y}
                 stroke="#a0aec0"
-                strokeWidth="1.5" // Slightly thicker for prominence
+                strokeWidth="1.5"
                 strokeDasharray="4,4"
                 opacity="0.8"
               />
@@ -500,7 +486,7 @@ export default function Step7MarkSetbacks({
                 y={midY}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fontSize="10" // Larger font for readability
+                fontSize="10"
                 fill="#4a5568"
                 fillOpacity="0.9"
                 pointerEvents="none"
@@ -511,24 +497,22 @@ export default function Step7MarkSetbacks({
           );
         })}
 
-        {/* Building area polygon */}
         {screenBuildingPoints.length > 2 && (
           <polygon
             points={screenBuildingPoints.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="rgba(59, 130, 246, 0.4)" // Slightly more opaque for emphasis
+            fill="rgba(59, 130, 246, 0.4)"
             stroke="#3b82f6"
-            strokeWidth="2.5" // Thicker stroke for visibility
+            strokeWidth="2.5"
           />
         )}
 
-        {/* Building area center label */}
         {screenBuildingPoints.length > 2 && (
           <text
             x={screenBuildingPoints.reduce((sum, p) => sum + p.x, 0) / screenBuildingPoints.length}
             y={screenBuildingPoints.reduce((sum, p) => sum + p.y, 0) / screenBuildingPoints.length}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize="14" // Larger font for prominence
+            fontSize="14"
             fontWeight="600"
             fill="#1e40af"
             pointerEvents="none"
@@ -537,7 +521,6 @@ export default function Step7MarkSetbacks({
           </text>
         )}
 
-        {/* Draggable corner points */}
         {screenBuildingPoints.map((point, index) => (
           <circle
             key={index}
@@ -553,14 +536,13 @@ export default function Step7MarkSetbacks({
           />
         ))}
 
-        {/* Corner point labels */}
         {screenBuildingPoints.map((point, index) => (
           <text
             key={`label-${index}`}
             x={point.x}
             y={point.y - 15}
             textAnchor="middle"
-            fontSize="12" // Larger font for clarity
+            fontSize="12"
             fontWeight="500"
             fill="#3b82f6"
             pointerEvents="none"
@@ -572,7 +554,6 @@ export default function Step7MarkSetbacks({
     );
   };
 
-  // Reset to square function
   const resetToSquare = () => {
     if (!bounding) return;
 
@@ -581,9 +562,9 @@ export default function Step7MarkSetbacks({
     const setback = 3;
     const centerX = (bounding.minX + bounding.maxX) / 2;
     const centerY = (bounding.minY + bounding.maxY) / 2;
-    const availableW = totalW - (setback * 2);
-    const availableH = totalH - (setback * 2);
-    const size = Math.min(availableW, availableH) * 0.98; // Increased to 98%
+    const availableW = totalW - setback * 2;
+    const availableH = totalH - setback * 2;
+    const size = Math.min(availableW, availableH) * 0.98;
     const half = size / 2;
 
     const square = [
@@ -614,66 +595,141 @@ export default function Step7MarkSetbacks({
 
   return (
     <Box
-      minHeight={containerMinHeight}
-      px={4}
+      h="600px"
+      w="100%"
+      maxW="400px"
+      mx="auto"
       display="flex"
       flexDirection="column"
       justifyContent="space-between"
+      px={4}
+      py={6}
     >
-      <Flex align="center" mb={4}>
-        <Heading size="sm" color="teal.600">Define Building Area</Heading>
-      </Flex>
+      {/* Scrollable Content Area */}
+      <Box
+        flex="1"
+        overflowY="auto"
+        overflowX="hidden"
+        pr={2}
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "#f1f1f1",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "#cbd5e0",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            background: "#a0aec0",
+          },
+        }}
+      >
+        <VStack spacing={4} align="stretch">
+          {/* Title */}
+          <Heading size="sm" color="cyan.600">
+            Define Building Area
+          </Heading>
 
-      <Text fontSize="sm" color="gray.600" mb={4} textAlign="center">
-        Drag the numbered corner points or enter gap values below to customize your building area shape within the plot boundary. Dashed lines show the shortest distance to the plot boundary.
-      </Text>
-
-      <Box height="280px" mb={6} mx="auto" maxWidth="350px" position="relative">
-        {renderDiagram()}
-      </Box>
-
-      <VStack spacing={4}>
-        <Text fontSize="xs" color="blue.600" textAlign="center" fontWeight="500">
-          🖱️ Drag corner points (1,2,3,4) or use inputs below to set gaps
-        </Text>
-
-        <Button onClick={resetToSquare} size="sm" variant="outline" colorScheme="blue">
-          Reset to Square
-        </Button>
-
-        {/* Display calculated gaps and input fields */}
-        <Box bg="gray.50" p={3} borderRadius="md" w="100%">
-          <Text fontSize="xs" color="gray.600" mb={2} fontWeight="600">
-            Setback Gaps at Key Positions:
+          {/* Instructions */}
+          <Text fontSize="13px" color="gray.600" textAlign="center">
+            Drag the numbered corner points or enter gap values below to customize your building area shape within the
+            plot boundary. Dashed lines show the shortest distance to the plot boundary.
           </Text>
-          <VStack align="start" spacing={3} fontSize="xs" color="gray.700">
-            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={2} w="100%">
+
+          {/* SVG Diagram */}
+          <Box height="280px" mx="auto" maxWidth="350px">
+            {renderDiagram()}
+          </Box>
+
+          {/* Helper Text */}
+          <Text fontSize="12px" color="blue.600" textAlign="center" fontWeight="500">
+            🖱️ Drag corner points (1,2,3,4) or use inputs below to set gaps
+          </Text>
+
+          {/* Reset Button */}
+          <Button onClick={resetToSquare} size="sm" variant="outline" colorScheme="blue" alignSelf="center">
+            Reset to Square
+          </Button>
+
+          {/* Gap Inputs */}
+          <Box bg="gray.50" p={4} borderRadius="10px" w="100%">
+            <Text fontSize="13px" color="gray.700" mb={3} fontWeight="600">
+              Setback Gaps at Key Positions:
+            </Text>
+            <SimpleGrid columns={2} spacing={3}>
               {currentGaps.map((g, index) => (
-                <FormControl key={g.label} isDisabled={isInteracting}>
-                  <FormLabel fontSize="xs" fontWeight="500">{g.label}: {g.gap} ft</FormLabel>
+                <FormControl key={g.label} isDisabled={isInteracting} size="sm">
+                  <FormLabel fontSize="11px" fontWeight="500" mb={1}>
+                    {g.label}: {g.gap} ft
+                  </FormLabel>
                   <Input
                     type="number"
                     size="sm"
-                    placeholder={g.gap}
+                    placeholder={g.gap.toString()}
                     value={gapInputs[index]}
                     onChange={(e) => handleGapInputChange(index, e.target.value)}
                     min="0"
                     step="0.1"
                     bg="white"
                     borderColor="gray.300"
+                    fontSize="12px"
+                    _hover={{
+                      borderColor: "cyan.400",
+                    }}
+                    _focus={{
+                      borderColor: "cyan.500",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                    }}
                   />
                 </FormControl>
               ))}
             </SimpleGrid>
-          </VStack>
-        </Box>
-      </VStack>
+          </Box>
+        </VStack>
+      </Box>
 
-      <Flex justifyContent="space-between" mt={6}>
-        <Button onClick={onBack} variant="outline" colorScheme="gray" size="sm">
+      {/* Fixed Navigation Buttons */}
+      <Flex justify="space-between" gap={3} mt={4} flexShrink={0}>
+        <Button
+          onClick={onBack}
+          variant="solid"
+          bg="white"
+          color="cyan.600"
+          border="1px solid"
+          borderColor="cyan.500"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
+          fontWeight="500"
+          fontSize="14px"
+          _hover={{
+            bg: "cyan.50",
+            borderColor: "cyan.600",
+          }}
+        >
           ← Previous
         </Button>
-        <Button onClick={handleAction} colorScheme="teal" size="sm">
+
+        <Button
+          onClick={handleAction}
+          variant="solid"
+          bg="cyan.500"
+          color="white"
+          border="none"
+          borderRadius="6px"
+          minW="100px"
+          h="40px"
+          fontWeight="500"
+          fontSize="14px"
+          ml="auto"
+          _hover={{
+            bg: "cyan.600",
+          }}
+        >
           {isLastStep ? "Submit" : "Next →"}
         </Button>
       </Flex>
