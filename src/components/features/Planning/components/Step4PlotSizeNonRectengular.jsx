@@ -172,6 +172,10 @@ export default function Step4PlotSizeNonRectangular({
   const handleMouseUp = () => {
     if (dragging && points) {
       const back = toPosNum(formData.size?.back, 50);
+      const front = toPosNum(formData.size?.front, 70);
+      const left = toPosNum(formData.size?.left, 40);
+      const right = toPosNum(formData.size?.right, 50);
+
       let new_offset;
       if (dragging === "backLine") {
         new_offset = (points.tl.x + points.tr.x) / 2;
@@ -179,20 +183,35 @@ export default function Step4PlotSizeNonRectangular({
         new_offset = points.tl.x + back / 2;
       }
 
-      const front = toPosNum(formData.size?.front, 70);
-      const left = toPosNum(formData.size?.left, 40);
-      const right = toPosNum(formData.size?.right, 50);
+      // No clamping - allow free movement
+      const bl_x = -front / 2;
+      const br_x = front / 2;
+      const tl_x = -back / 2 + new_offset;
+      const tr_x = back / 2 + new_offset;
 
-      const minSeparation = 1;
-      const clampedOffset = clampOffset(new_offset, front, back, left, right, minSeparation);
+      const dx_left = tl_x - bl_x;
+      const dx_right = tr_x - br_x;
+
+      // Allow negative heights
+      const h_left_sq = left ** 2 - dx_left ** 2;
+      const h_right_sq = right ** 2 - dx_right ** 2;
+      
+      const h_left = h_left_sq >= 0 ? Math.sqrt(h_left_sq) : -Math.sqrt(-h_left_sq);
+      const h_right = h_right_sq >= 0 ? Math.sqrt(h_right_sq) : -Math.sqrt(-h_right_sq);
+
+      // Update points with correct heights
+      setPoints({
+        ...points,
+        tl: { x: tl_x, y: h_left },
+        tr: { x: tr_x, y: h_right },
+      });
 
       setFormData({
         ...formData,
-        size: { ...formData.size, offset: clampedOffset.toFixed(1) },
+        size: { ...formData.size, offset: new_offset.toFixed(1) },
       });
     }
     setDragging(null);
-    setInitialDragX(null);
   };
 
   const handleMouseMove = (e) => {
