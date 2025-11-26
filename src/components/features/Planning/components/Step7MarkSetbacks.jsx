@@ -1,4 +1,3 @@
-// src/features/Planning/components/Step7MarkSetbacks.jsx
 import {
   Box,
   Flex,
@@ -10,6 +9,7 @@ import {
   SimpleGrid,
   FormControl,
   FormLabel,
+  Divider,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -27,6 +27,7 @@ export default function Step7MarkSetbacks({
   const [bounding, setBounding] = useState(null);
   const [buildingPoints, setBuildingPoints] = useState([]);
   const [dragging, setDragging] = useState(false);
+  const [dragType, setDragType] = useState(null);
   const [dragPointIndex, setDragPointIndex] = useState(-1);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isInteracting, setIsInteracting] = useState(false);
@@ -125,12 +126,12 @@ export default function Step7MarkSetbacks({
 
     const totalW = bounding.maxX - bounding.minX;
     const totalH = bounding.maxY - bounding.minY;
-    const setback = 3;
+    const setback = 2.5; // Increased for more gap
     const centerX = (bounding.minX + bounding.maxX) / 2;
     const centerY = (bounding.minY + bounding.maxY) / 2;
     const availableW = totalW - setback * 2;
     const availableH = totalH - setback * 2;
-    const size = Math.min(availableW, availableH) * 0.98;
+    const size = Math.min(availableW, availableH) * 0.80; // Reduced from 0.98 to 0.80
     const half = size / 2;
 
     const initialSquare = [
@@ -144,7 +145,7 @@ export default function Step7MarkSetbacks({
       setBuildingPoints(initialSquare);
       setGapInputs(Array(8).fill(""));
     } else {
-      const fallbackSize = Math.min(availableW, availableH) * 0.85;
+      const fallbackSize = Math.min(availableW, availableH) * 0.75; // Reduced from 0.95 to 0.75
       const fallbackHalf = fallbackSize / 2;
       const fallbackSquare = [
         { x: centerX - fallbackHalf, y: centerY - fallbackHalf },
@@ -182,7 +183,7 @@ export default function Step7MarkSetbacks({
     };
   };
 
-  // Start dragging a specific point
+  // Start dragging a corner point
   const handlePointStart = useCallback(
     (pointIndex, e, isTouch = false) => {
       if (isTouch) e.preventDefault();
@@ -195,36 +196,103 @@ export default function Step7MarkSetbacks({
       });
 
       setDragPointIndex(pointIndex);
+      setDragType('corner');
       setDragging(true);
       setIsInteracting(true);
     },
     [getModelFromMouse, buildingPoints]
   );
 
-  // Handle point dragging
-  const handlePointMove = useCallback(
+  // Start dragging an edge
+  const handleEdgeStart = useCallback(
+    (edgeIndex, e, isTouch = false) => {
+      if (isTouch) e.preventDefault();
+      e.stopPropagation();
+
+      const p1Index = edgeIndex;
+      const p2Index = (edgeIndex + 1) % 4;
+      const edgeMid = {
+        x: (buildingPoints[p1Index].x + buildingPoints[p2Index].x) / 2,
+        y: (buildingPoints[p1Index].y + buildingPoints[p2Index].y) / 2,
+      };
+
+      const p = isTouch ? getModelFromTouch(e) : getModelFromMouse(e);
+      setDragOffset({
+        x: p.x - edgeMid.x,
+        y: p.y - edgeMid.y,
+      });
+
+      setDragPointIndex(edgeIndex);
+      setDragType('edge');
+      setDragging(true);
+      setIsInteracting(true);
+    },
+    [getModelFromMouse, buildingPoints]
+  );
+
+  // Handle dragging
+  const handleMove = useCallback(
     (e, isTouch = false) => {
       if (!dragging || dragPointIndex === -1 || !bounding) return;
       if (isTouch) e.preventDefault();
 
       const p = isTouch ? getModelFromTouch(e) : getModelFromMouse(e);
-      const newX = p.x - dragOffset.x;
-      const newY = p.y - dragOffset.y;
-      const newPoint = { x: newX, y: newY };
 
-      if (isPointValid(newPoint)) {
-        const newPoints = [...buildingPoints];
-        newPoints[dragPointIndex] = newPoint;
-        setBuildingPoints(newPoints);
-        setGapInputs(Array(8).fill(""));
+      if (dragType === 'corner') {
+        // Corner dragging logic
+        const newX = p.x - dragOffset.x;
+        const newY = p.y - dragOffset.y;
+        const newPoint = { x: newX, y: newY };
+
+        if (isPointValid(newPoint)) {
+          const newPoints = [...buildingPoints];
+          newPoints[dragPointIndex] = newPoint;
+          setBuildingPoints(newPoints);
+          setGapInputs(Array(8).fill(""));
+        }
+      } else if (dragType === 'edge') {
+        // Edge dragging logic
+        const p1Index = dragPointIndex;
+        const p2Index = (dragPointIndex + 1) % 4;
+
+        const currentMid = {
+          x: (buildingPoints[p1Index].x + buildingPoints[p2Index].x) / 2,
+          y: (buildingPoints[p1Index].y + buildingPoints[p2Index].y) / 2,
+        };
+
+        const targetMid = {
+          x: p.x - dragOffset.x,
+          y: p.y - dragOffset.y,
+        };
+
+        const deltaX = targetMid.x - currentMid.x;
+        const deltaY = targetMid.y - currentMid.y;
+
+        const newP1 = {
+          x: buildingPoints[p1Index].x + deltaX,
+          y: buildingPoints[p1Index].y + deltaY,
+        };
+        const newP2 = {
+          x: buildingPoints[p2Index].x + deltaX,
+          y: buildingPoints[p2Index].y + deltaY,
+        };
+
+        if (isPointValid(newP1) && isPointValid(newP2)) {
+          const newPoints = [...buildingPoints];
+          newPoints[p1Index] = newP1;
+          newPoints[p2Index] = newP2;
+          setBuildingPoints(newPoints);
+          setGapInputs(Array(8).fill(""));
+        }
       }
     },
-    [dragging, dragPointIndex, bounding, getModelFromMouse, dragOffset, buildingPoints, isPointValid]
+    [dragging, dragPointIndex, dragType, bounding, getModelFromMouse, dragOffset, buildingPoints, isPointValid]
   );
 
   // Finish interaction
   const handleEnd = useCallback(() => {
     setDragging(false);
+    setDragType(null);
     setDragPointIndex(-1);
     setDragOffset({ x: 0, y: 0 });
     setIsInteracting(false);
@@ -243,12 +311,12 @@ export default function Step7MarkSetbacks({
   // Global event listeners
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
-      if (dragging) handlePointMove(e);
+      if (dragging) handleMove(e);
     };
     const handleGlobalMouseUp = () => handleEnd();
 
     const handleGlobalTouchMove = (e) => {
-      if (dragging) handlePointMove(e, true);
+      if (dragging) handleMove(e, true);
     };
     const handleGlobalTouchEnd = () => handleEnd();
 
@@ -264,7 +332,7 @@ export default function Step7MarkSetbacks({
       document.removeEventListener("touchmove", handleGlobalTouchMove);
       document.removeEventListener("touchend", handleGlobalTouchEnd);
     };
-  }, [dragging, handlePointMove, handleEnd]);
+  }, [dragging, handleMove, handleEnd]);
 
   // Distance from point to segment
   const distPointToSegment = (p, a, b) => {
@@ -328,87 +396,29 @@ export default function Step7MarkSetbacks({
     return gaps;
   }, [modelPoints, buildingPoints]);
 
-  // Handle gap input changes
-  const handleGapInputChange = useCallback(
-    (index, value) => {
-      if (!modelPoints || !buildingPoints.length) return;
+  // Calculate diagonal distances
+  const calculateDiagonals = useCallback(() => {
+    if (buildingPoints.length !== 4) return { diagonal1: 0, diagonal2: 0 };
 
-      const newGapInputs = [...gapInputs];
-      newGapInputs[index] = value;
-      setGapInputs(newGapInputs);
+    const diagonal1 = Math.round(
+      Math.hypot(
+        buildingPoints[2].x - buildingPoints[0].x,
+        buildingPoints[2].y - buildingPoints[0].y
+      ) * 10
+    ) / 10;
 
-      const gapValue = parseFloat(value);
-      if (isNaN(gapValue) || gapValue < 0) return;
+    const diagonal2 = Math.round(
+      Math.hypot(
+        buildingPoints[3].x - buildingPoints[1].x,
+        buildingPoints[3].y - buildingPoints[1].y
+      ) * 10
+    ) / 10;
 
-      const plotSegments = [
-        [modelPoints.tl, modelPoints.tr],
-        [modelPoints.tr, modelPoints.br],
-        [modelPoints.br, modelPoints.bl],
-        [modelPoints.bl, modelPoints.tl],
-      ];
-
-      const newPoints = [...buildingPoints];
-
-      if (index < 4) {
-        const pointIndex = [0, 1, 2, 3][index];
-        const currentPoint = buildingPoints[pointIndex];
-        const results = plotSegments.map((s) => distPointToSegment(currentPoint, s[0], s[1]));
-        const minResult = results.reduce((min, curr) => (curr.dist < min.dist ? curr : min), results[0]);
-        const closest = minResult.closest;
-        const dx = currentPoint.x - closest.x;
-        const dy = currentPoint.y - closest.y;
-        const currentDist = Math.hypot(dx, dy);
-        if (currentDist === 0) return;
-
-        const scale = gapValue / currentDist;
-        const newX = closest.x + dx * scale;
-        const newY = closest.y + dy * scale;
-
-        if (isPointValid({ x: newX, y: newY })) {
-          newPoints[pointIndex] = { x: newX, y: newY };
-          setBuildingPoints(newPoints);
-        }
-      } else {
-        const midIndex = index - 4;
-        const pointIndices = [
-          [0, 1],
-          [1, 2],
-          [2, 3],
-          [3, 0],
-        ][midIndex];
-        const p1 = buildingPoints[pointIndices[0]];
-        const p2 = buildingPoints[pointIndices[1]];
-        const midPoint = {
-          x: (p1.x + p2.x) / 2,
-          y: (p1.y + p2.y) / 2,
-        };
-
-        const results = plotSegments.map((s) => distPointToSegment(midPoint, s[0], s[1]));
-        const minResult = results.reduce((min, curr) => (curr.dist < min.dist ? curr : min), results[0]);
-        const closest = minResult.closest;
-        const dx = midPoint.x - closest.x;
-        const dy = midPoint.y - closest.y;
-        const currentDist = Math.hypot(dx, dy);
-        if (currentDist === 0) return;
-
-        const scale = gapValue / currentDist;
-        const deltaX = dx * (scale - 1);
-        const deltaY = dy * (scale - 1);
-
-        const newP1 = { x: p1.x + deltaX, y: p1.y + deltaY };
-        const newP2 = { x: p2.x + deltaX, y: p2.y + deltaY };
-
-        if (isPointValid(newP1) && isPointValid(newP2)) {
-          newPoints[pointIndices[0]] = newP1;
-          newPoints[pointIndices[1]] = newP2;
-          setBuildingPoints(newPoints);
-        }
-      }
-    },
-    [gapInputs, modelPoints, buildingPoints, isPointValid]
-  );
+    return { diagonal1, diagonal2 };
+  }, [buildingPoints]);
 
   const currentGaps = calculateGaps();
+  const diagonals = calculateDiagonals();
 
   const renderDiagram = () => {
     if (!modelPoints || !bounding || buildingPoints.length === 0) {
@@ -423,7 +433,7 @@ export default function Step7MarkSetbacks({
     const viewH = 280;
     const boundingW = bounding.maxX - bounding.minX;
     const boundingH = bounding.maxY - bounding.minY;
-    const finalScale = Math.min(viewW / boundingW, viewH / boundingH) * 0.8;
+    const finalScale = Math.min(viewW / boundingW, viewH / boundingH) * 0.85; // Keep this large for outer plot
     const shiftX = (viewW - boundingW * finalScale) / 2 - bounding.minX * finalScale;
     const shiftY = (viewH - boundingH * finalScale) / 2 - bounding.minY * finalScale;
 
@@ -442,7 +452,16 @@ export default function Step7MarkSetbacks({
     };
 
     const screenBuildingPoints = buildingPoints.map(toScreen);
-    const handleRadius = 8;
+    const cornerRadius = 8;
+    const edgeRadius = 6;
+
+    // Calculate edge midpoints
+    const edgeMidpoints = [
+      { x: (screenBuildingPoints[0].x + screenBuildingPoints[1].x) / 2, y: (screenBuildingPoints[0].y + screenBuildingPoints[1].y) / 2 },
+      { x: (screenBuildingPoints[1].x + screenBuildingPoints[2].x) / 2, y: (screenBuildingPoints[1].y + screenBuildingPoints[2].y) / 2 },
+      { x: (screenBuildingPoints[2].x + screenBuildingPoints[3].x) / 2, y: (screenBuildingPoints[2].y + screenBuildingPoints[3].y) / 2 },
+      { x: (screenBuildingPoints[3].x + screenBuildingPoints[0].x) / 2, y: (screenBuildingPoints[3].y + screenBuildingPoints[0].y) / 2 },
+    ];
 
     return (
       <svg
@@ -452,18 +471,21 @@ export default function Step7MarkSetbacks({
         style={{ touchAction: "none", border: "1px solid #e2e8f0", borderRadius: "8px" }}
         onTouchStart={(e) => e.preventDefault()}
       >
+        {/* Plot boundary */}
         <polygon
           points={`${screenPlotPoints.tl.x},${screenPlotPoints.tl.y} ${screenPlotPoints.tr.x},${screenPlotPoints.tr.y} ${screenPlotPoints.br.x},${screenPlotPoints.br.y} ${screenPlotPoints.bl.x},${screenPlotPoints.bl.y}`}
           fill="rgba(229, 231, 235, 0.4)"
           stroke="#94a3b8"
-          strokeWidth="2"
+          strokeWidth="4"
           strokeDasharray="5,5"
         />
 
-        <text x={viewW / 2} y={25} textAnchor="middle" fontSize="12" fontWeight="600" fill="#64748b">
+        <text x={viewW / 2} y={16} textAnchor="middle" fontSize="12" fontWeight="600" fill="#64748b">
           Plot Boundary
         </text>
 
+
+        {/* Gap lines and labels */}
         {currentGaps.map((gap, index) => {
           const p1 = toScreen(gap.point);
           const p2 = toScreen(gap.closestPoint);
@@ -490,6 +512,7 @@ export default function Step7MarkSetbacks({
                 fill="#4a5568"
                 fillOpacity="0.9"
                 pointerEvents="none"
+                fontWeight="bold"
               >
                 {gap.gap} ft
               </text>
@@ -497,10 +520,61 @@ export default function Step7MarkSetbacks({
           );
         })}
 
+        {/* Diagonals */}
+        {screenBuildingPoints.length === 4 && (
+          <>
+            <line
+              x1={screenBuildingPoints[0].x}
+              y1={screenBuildingPoints[0].y}
+              x2={screenBuildingPoints[2].x}
+              y2={screenBuildingPoints[2].y}
+              stroke="#6366f1"
+              strokeWidth="2"
+              strokeDasharray="6,3"
+              opacity="0.6"
+            />
+            <line
+              x1={screenBuildingPoints[1].x}
+              y1={screenBuildingPoints[1].y}
+              x2={screenBuildingPoints[3].x}
+              y2={screenBuildingPoints[3].y}
+              stroke="#6366f1"
+              strokeWidth="2"
+              strokeDasharray="6,3"
+              opacity="0.6"
+            />
+
+            <text
+              x={(screenBuildingPoints[0].x + screenBuildingPoints[2].x) / 2}
+              y={(screenBuildingPoints[0].y + screenBuildingPoints[2].y) / 2 - 6}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="bold"
+              fill="#4338ca"
+              pointerEvents="none"
+            >
+              {diagonals.diagonal1} ft
+            </text>
+
+            <text
+              x={(screenBuildingPoints[1].x + screenBuildingPoints[3].x) / 2}
+              y={(screenBuildingPoints[1].y + screenBuildingPoints[3].y) / 2 + 14}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="bold"
+              fill="#4338ca"
+              pointerEvents="none"
+            >
+              {diagonals.diagonal2} ft
+            </text>
+          </>
+        )}
+
+        {/* Building polygon */}
         {screenBuildingPoints.length > 2 && (
           <polygon
             points={screenBuildingPoints.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="rgba(59, 130, 246, 0.4)"
+            fill="rgba(59, 130, 246, 0.3)"
             stroke="#3b82f6"
             strokeWidth="2.5"
           />
@@ -521,12 +595,29 @@ export default function Step7MarkSetbacks({
           </text>
         )}
 
+        {/* Edge midpoint handles */}
+        {edgeMidpoints.map((midpoint, index) => (
+          <circle
+            key={`edge-${index}`}
+            cx={midpoint.x}
+            cy={midpoint.y}
+            r={edgeRadius}
+            fill="#e0f2fe"
+            stroke="#06b6d4"
+            strokeWidth="2.5"
+            style={{ cursor: "move" }}
+            onMouseDown={(e) => handleEdgeStart(index, e)}
+            onTouchStart={(e) => handleEdgeStart(index, e, true)}
+          />
+        ))}
+
+        {/* Corner handles */}
         {screenBuildingPoints.map((point, index) => (
           <circle
-            key={index}
+            key={`corner-${index}`}
             cx={point.x}
             cy={point.y}
-            r={handleRadius}
+            r={cornerRadius}
             fill="white"
             stroke="#3b82f6"
             strokeWidth="3"
@@ -536,14 +627,15 @@ export default function Step7MarkSetbacks({
           />
         ))}
 
+        {/* Corner number labels */}
         {screenBuildingPoints.map((point, index) => (
           <text
             key={`label-${index}`}
             x={point.x}
-            y={point.y - 15}
+            y={point.y + 18}
             textAnchor="middle"
             fontSize="12"
-            fontWeight="500"
+            fontWeight="600"
             fill="#3b82f6"
             pointerEvents="none"
           >
@@ -559,12 +651,12 @@ export default function Step7MarkSetbacks({
 
     const totalW = bounding.maxX - bounding.minX;
     const totalH = bounding.maxY - bounding.minY;
-    const setback = 3;
+    const setback = 2.5;
     const centerX = (bounding.minX + bounding.maxX) / 2;
     const centerY = (bounding.minY + bounding.maxY) / 2;
     const availableW = totalW - setback * 2;
     const availableH = totalH - setback * 2;
-    const size = Math.min(availableW, availableH) * 0.98;
+    const size = Math.min(availableW, availableH) * 0.80;
     const half = size / 2;
 
     const square = [
@@ -578,7 +670,7 @@ export default function Step7MarkSetbacks({
       setBuildingPoints(square);
       setGapInputs(Array(8).fill(""));
     } else {
-      const fallbackSize = Math.min(availableW, availableH) * 0.85;
+      const fallbackSize = Math.min(availableW, availableH) * 0.75;
       const fallbackHalf = fallbackSize / 2;
       const fallbackSquare = [
         { x: centerX - fallbackHalf, y: centerY - fallbackHalf },
@@ -605,7 +697,6 @@ export default function Step7MarkSetbacks({
       px={4}
       py={6}
     >
-      {/* Scrollable Content Area */}
       <Box
         flex="1"
         overflowY="auto"
@@ -629,70 +720,97 @@ export default function Step7MarkSetbacks({
         }}
       >
         <VStack spacing={4} align="stretch">
-          {/* Title */}
           <Heading size="sm" color="cyan.600">
             Define Building Area
           </Heading>
 
-          {/* Instructions */}
           <Text fontSize="13px" color="gray.600" textAlign="center">
-            Drag the numbered corner points or enter gap values below to customize your building area shape within the
-            plot boundary. Dashed lines show the shortest distance to the plot boundary.
+            Drag corner points or edge midpoints to customize your building area. Dashed lines show distances to plot boundary.
           </Text>
 
-          {/* SVG Diagram */}
           <Box height="280px" mx="auto" maxWidth="350px">
             {renderDiagram()}
           </Box>
 
-          {/* Helper Text */}
           <Text fontSize="12px" color="blue.600" textAlign="center" fontWeight="500">
-            🖱️ Drag corner points (1,2,3,4) or use inputs below to set gaps
+            🔵 Corners • 🔷 Edge Midpoints • ➕ Diagonals
           </Text>
 
-          {/* Reset Button */}
           <Button onClick={resetToSquare} size="sm" variant="outline" colorScheme="blue" alignSelf="center">
             Reset to Square
           </Button>
 
-          {/* Gap Inputs */}
           <Box bg="gray.50" p={4} borderRadius="10px" w="100%">
-            <Text fontSize="13px" color="gray.700" mb={3} fontWeight="600">
+            <Text fontSize="13px" color="black" mb={3} fontWeight="700">
               Setback Gaps at Key Positions:
             </Text>
             <SimpleGrid columns={2} spacing={3}>
               {currentGaps.map((g, index) => (
-                <FormControl key={g.label} isDisabled={isInteracting} size="sm">
-                  <FormLabel fontSize="11px" fontWeight="500" mb={1}>
-                    {g.label}: {g.gap} ft
+                <FormControl key={g.label} isDisabled size="sm">
+                  <FormLabel fontSize="11px" fontWeight="600" mb={1} color="black">
+                    {g.label}
                   </FormLabel>
                   <Input
                     type="number"
                     size="sm"
-                    placeholder={g.gap.toString()}
-                    value={gapInputs[index]}
-                    onChange={(e) => handleGapInputChange(index, e.target.value)}
+                    value={g.gap}
+                    isReadOnly
                     min="0"
                     step="0.1"
-                    bg="white"
+                    bg="gray.100"
                     borderColor="gray.300"
+                    fontWeight="bold"
                     fontSize="12px"
-                    _hover={{
-                      borderColor: "cyan.400",
-                    }}
-                    _focus={{
-                      borderColor: "cyan.500",
-                      boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
-                    }}
+                    color="black"
                   />
                 </FormControl>
               ))}
+            </SimpleGrid>
+
+            <Divider my={4} borderColor="gray.300" />
+
+            <Text fontSize="13px" color="black" mb={3} fontWeight="700">
+              Diagonal Measurements:
+            </Text>
+            <SimpleGrid columns={2} spacing={3}>
+              <FormControl isDisabled size="sm">
+                <FormLabel fontSize="11px" fontWeight="600" mb={1} color="black">
+                  Diagonal 1 (Corner 1→3)
+                </FormLabel>
+                <Input
+                  type="number"
+                  size="sm"
+                  value={diagonals.diagonal1}
+                  isReadOnly
+                  bg="indigo.50"
+                  borderColor="indigo.300"
+                  fontWeight="bold"
+                  fontSize="12px"
+                  color="black"
+                />
+              </FormControl>
+
+              <FormControl isDisabled size="sm">
+                <FormLabel fontSize="11px" fontWeight="600" mb={1} color="black">
+                  Diagonal 2 (Corner 2→4)
+                </FormLabel>
+                <Input
+                  type="number"
+                  size="sm"
+                  value={diagonals.diagonal2}
+                  isReadOnly
+                  bg="indigo.50"
+                  borderColor="indigo.300"
+                  fontWeight="bold"
+                  fontSize="12px"
+                  color="black"
+                />
+              </FormControl>
             </SimpleGrid>
           </Box>
         </VStack>
       </Box>
 
-      {/* Fixed Navigation Buttons */}
       <Flex justify="space-between" gap={3} mt={4} flexShrink={0}>
         <Button
           onClick={onBack}

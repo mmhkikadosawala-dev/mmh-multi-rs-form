@@ -19,14 +19,15 @@ import Step9StairType from "../components/Step9StairType";
 import Step10ParkingRequirement from "../components/Step10ParkingRequirement";
 import Step11GroundFloorRequirement from "../components/Step11GroundFloorRequirement";
 import Step12ExistingSiteElements from "../components/Step12ExistingSiteElements";
-import Step13StructureType from "../components/Step13StructureType";
-import Step14ConstructionPrefrences from "../components/Step14ConstructionPrefrences";
+// import Step13StructureType from "../components/Step13StructureType";
+// import Step14ConstructionPrefrences from "../components/Step14ConstructionPrefrences";
 import Step15WallDimentions from "../components/Step15WallDimentions";
 import Step16WallDimentions from "../components/Step16WallDimentions";
 import Step17StaircaseDimentions from "../components/Step17StaircaseDimentions";
 import Step18BalconySlab from "../components/Step18BalconySlab";
 import Step19AttachRegistryCopy from "../components/Step19AttachRegistryCopy";
 import Step20ApproximateBudget from "../components/Step20ApproximateProjectBudget";
+
 
 export default function PlanningFormPage() {
   const [step, setStep] = useState(0);
@@ -38,31 +39,33 @@ export default function PlanningFormPage() {
     projectType: "", // Added for new step
   });
 
+
   const containerWidth = useBreakpointValue({ base: "100%", md: "400px" });
 
+
   const steps = [
-    { title: "Plot shape" },
-    { title: "Direction" },
-    { title: "Select peripheries" },
-    { title: "Plot size" },
-    { title: "Project Type" },
-    { title: "Mark Setbacks" },
-    { title: "Plot Level Information" },
-    { title: "Stair Case" },
-    { title: "Parking Requirement" },
-    { title: "Floor Requirement" },
-    { title: "Exisiting Site Elements" },
-    { title: "Structure Type" },
-    { title: "Construction Prefrences" },
-    { title: "Construction Prefrences" },
-    { title: "Wall Dimentions" },
-    { title: "Wall Dimentions" },
-    { title: "Staircase Dimentions" },
-    { title: "Balcony Slab" },
-    { title: "Attach Registry Copy" },
-    { title: "Approximate Project Budget" },
-    // Add future steps here, e.g., { title: "New Step" },
+    { title: "Plot shape" },                    // 0
+    { title: "Direction" },                     // 1
+    { title: "Select peripheries" },            // 2
+    { title: "Plot size" },                     // 3
+    { title: "Project Type" },                  // 4
+    { title: "Mark Setbacks" },                 // 5
+    { title: "Plot Level Information" },        // 6
+    { title: "Stair Case" },                    // 7
+    { title: "Parking Requirement" },           // 8
+    { title: "Floor Requirement" },             // 9
+    { title: "Exisiting Site Elements" },       // 10
+    // { title: "Structure Type" },             // 11 - Commented out temporarily
+    // { title: "Construction Prefrences" },    // 12 - Commented out temporarily
+    { title: "Wall Dimentions" },               // 11 (was 13)
+    { title: "Wall Dimentions" },               // 12 (was 14)
+    { title: "Staircase Dimentions" },          // 13 (was 15)
+    { title: "Balcony Slab" },                  // 14 (was 16)
+    { title: "Attach Registry Copy" },          // 15 (was 17)
+    { title: "Approximate Project Budget" },    // 16 (was 18)
+    { title: "Approximate Project Budget" },    // 17 (was 19)
   ];
+
 
   const storeData = async (data) => {
     console.log('Storing data to database:', data);
@@ -71,13 +74,16 @@ export default function PlanningFormPage() {
     localStorage.setItem('formData', JSON.stringify(data)); // Temporary storage
   };
 
+
   const nextStep = async () => {
     await storeData(formData); // Store on next click
     console.log(`Form data after step ${step}:`, formData);
     setStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
 
+
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
+
 
   const handleSubmit = async () => {
     await storeData(formData); // Store on submit
@@ -86,7 +92,9 @@ export default function PlanningFormPage() {
     // e.g., const response = await fetch('/api/submit'); then navigate based on response
   };
 
+
   const isLastStep = (currentStep) => currentStep === steps.length - 1;
+
 
   const renderStep = () => {
     const props = {
@@ -97,6 +105,7 @@ export default function PlanningFormPage() {
       onSubmit: handleSubmit,
       isLastStep: isLastStep(step),
     };
+
 
     switch (step) {
       case 0:
@@ -122,29 +131,29 @@ export default function PlanningFormPage() {
         return <Step11GroundFloorRequirement {...props} />;
       case 10:
         return <Step12ExistingSiteElements {...props} />;
+      // case 11:
+      //   return <Step13StructureType {...props} />; // Commented out temporarily
+      // case 12:
+      //   return <Step14ConstructionPrefrences {...props} />; // Commented out temporarily
       case 11:
-        return <Step13StructureType {...props} />;
-      case 12:
-        return <Step14ConstructionPrefrences {...props} />;
-      case 13:
         return <Step15WallDimentions {...props} />;
-      case 14:
+      case 12:
         return <Step16WallDimentions {...props} />;
-      case 15:
+      case 13:
         return <Step17StaircaseDimentions {...props} />;
-      case 16:
+      case 14:
         return <Step18BalconySlab {...props} />;
-      case 17:
+      case 15:
         return <Step19AttachRegistryCopy {...props} />;
-      case 18:
+      case 16:
         return <Step20ApproximateBudget {...props} />;
-      case 19:
+      case 17:
         return <Step20ApproximateBudget {...props} />;
-      // Add future cases here, e.g., case 5: return <NewStepComponent {...props} />;
       default:
         return null;
     }
   };
+
 
   return (
     <Flex
@@ -186,9 +195,11 @@ export default function PlanningFormPage() {
           </Flex>
         </Box>
 
+
         <Heading size="md" mb={6} textAlign="left" fontWeight="semibold">
           Planning Form
         </Heading>
+
 
         <Box flex="1">{renderStep()}</Box>
       </Box>

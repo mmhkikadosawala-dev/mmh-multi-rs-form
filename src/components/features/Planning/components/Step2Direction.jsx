@@ -10,6 +10,8 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
+import RoadWithHuman from "../../../../assets/Planning/RoadImage/roadwithhuman.png";
+
 
 const directionAngles = {
   north: 0,
@@ -22,8 +24,10 @@ const directionAngles = {
   "north-west": 315,
 };
 
+
 export default function Step2PlotDirection({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
+
 
   return (
     <Box
@@ -52,14 +56,25 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
             alignItems="center"
             justifyContent="center"
           >
-            <Image 
-              src={CompassImage} 
-              alt="Rotating Compass" 
-              boxSize="100%" 
-              objectFit="contain" 
+            <Image
+              src={CompassImage}
+              alt="Rotating Compass"
+              boxSize="100%"
+              objectFit="contain"
+            />
+          </Box>
+
+          {/* Road with Human Image - Smaller size */}
+          <Box mt={2} mb={2}>
+            <Image
+              src={RoadWithHuman}
+              alt="Road with Human"
+              height="35px"
+              objectFit="contain"
             />
           </Box>
         </Flex>
+
 
         {/* Directions Grid */}
         <RadioGroup
@@ -93,6 +108,7 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
         </RadioGroup>
       </Box>
 
+
       {/* Fixed Navigation Buttons */}
       <Flex justify="space-between" gap={3}>
         <Button
@@ -114,7 +130,7 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
         >
           ← Previous
         </Button>
-        
+
         <Button
           onClick={handleAction}
           isDisabled={!formData.direction}
