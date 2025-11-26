@@ -130,7 +130,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           </Box>
         </Flex>
 
-        {/* Compass & Images */}
+        {/* Compass & Images - सिर्फ यही हिस्सा बदला है */}
         <Box 
           position="relative" 
           height="200px" 
@@ -141,22 +141,22 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           borderRadius="12px"
           p={4}
         >
-          {/* Center Compass */}
+          {/* बड़ा Compass */}
           <Image
             position="absolute"
             top="50%"
             left="50%"
             transform="translate(-50%, -50%)"
             src={CompassImage}
-            width="110px"
-            height="110px"
+            width="150px"
+            height="150px"
             zIndex={10}
           />
 
-          {/* Bottom Fixed Road */}
+          {/* Bottom Road - बाहर शिफ्ट */}
           <Image
             position="absolute"
-            bottom="16px"
+            bottom="4px"
             left="50%"
             transform="translateX(-50%)"
             src={RoadImage}
@@ -169,7 +169,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           {backImage && (
             <Image
               position="absolute"
-              top="16px"
+              top="4px"
               left="50%"
               transform="translateX(-50%)"
               src={backImage}
@@ -184,7 +184,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           {leftImage && (
             <Image
               position="absolute"
-              left="16px"
+              left="-8px"
               top="50%"
               transform="translateY(-50%) rotate(-90deg)"
               transformOrigin="center"
@@ -200,7 +200,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           {rightImage && (
             <Image
               position="absolute"
-              right="16px"
+              right="-8px"
               top="50%"
               transform="translateY(-50%) rotate(90deg)"
               transformOrigin="center"
@@ -214,7 +214,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
         </Box>
       </Box>
 
-      {/* Fixed Navigation Buttons */}
+      {/* Fixed Navigation Buttons - बिल्कुल वैसे ही जैसे पहले थे */}
       <Flex justify="space-between" gap={3} flexShrink={0}>
         <Button
           onClick={onBack}

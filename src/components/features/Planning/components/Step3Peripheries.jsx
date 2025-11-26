@@ -68,15 +68,15 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
         >
           {/* Center Compass */}
           <Image
-            position="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-            src={CompassImage}
-            width="110px"
-            height="110px"
-            zIndex={10}
-          />
+  position="absolute"
+  top="50%"
+  left="50%"
+  transform="translate(-50%, -50%)"
+  src={CompassImage}
+  width="140px"
+  height="140px"
+  zIndex={10}
+/>
 
           {/* Bottom Fixed Road */}
           <Image
