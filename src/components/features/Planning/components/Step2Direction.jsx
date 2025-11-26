@@ -1,49 +1,31 @@
-// src/features/Planning/components/Step3Peripheries.jsx
+// src/features/Planning/components/Step2PlotDirection.jsx
 import {
   Box,
   Flex,
-  Text,
   Radio,
   RadioGroup,
-  Stack,
-  Image,
+  Text,
   Button,
+  Image,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
-import NeighbourHomeImage from "../../../../assets/Planning/NeighboursHouse/Rectangle 9607.png";
-import RoadImage from "../../../../assets/Planning/RoadImage/Group 35547.png";
+import RoadWithHuman from "../../../../assets/Planning/RoadImage/roadwithhuman.png";
 
 
-const sides = [
-  { key: "right", label: "Right side of plot" },
-  { key: "back", label: "Back side of plot" },
-  { key: "left", label: "Left side of plot" },
-];
+const directionAngles = {
+  north: 0,
+  "north-east": 45,
+  east: 90,
+  "south-east": 135,
+  south: 180,
+  "south-west": 225,
+  west: 270,
+  "north-west": 315,
+};
 
 
-function getSideImage(side, peripheries) {
-  const value = peripheries[side];
-  if (!value) return null;
-  if (value === "Road") return RoadImage;
-  if (value === "Neighbour Plot") return NeighbourHomeImage;
-  return null;
-}
-
-
-export default function Step3Peripheries({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
-  const updatePeriphery = (side, value) => {
-    setFormData({
-      ...formData,
-      peripheries: { ...formData.peripheries, [side]: value },
-    });
-  };
-
-
-  const rightImage = getSideImage("right", formData.peripheries);
-  const backImage = getSideImage("back", formData.peripheries);
-  const leftImage = getSideImage("left", formData.peripheries);
-
-
+export default function Step2PlotDirection({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
 
 
@@ -61,161 +43,74 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
     >
       {/* Content Area */}
       <Box>
-        {/* Compass & Images */}
-        <Box 
-          position="relative" 
-          height="240px" 
-          mb={5} 
-          mx="auto" 
-          maxWidth="320px"
-          bg="gray.50"
-          borderRadius="12px"
-          p={4}
+        {/* Compass Section */}
+        <Flex justify="center" direction="column" align="center" mb={4}>
+          <Text mb={3} fontWeight="600" fontSize="16px" color="gray.700" letterSpacing="-0.01em">
+            Plot Direction Compass
+          </Text>
+          <Box
+            boxSize="180px"
+            transform={`rotate(${directionAngles[formData.direction] || 0}deg)`}
+            transition="transform 0.4s ease-in-out"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Image
+              src={CompassImage}
+              alt="Rotating Compass"
+              boxSize="100%"
+              objectFit="contain"
+            />
+          </Box>
+
+          {/* Road with Human Image - Smaller size */}
+          <Box mt={2} mb={2}>
+            <Image
+              src={RoadWithHuman}
+              alt="Road with Human"
+              height="35px"
+              objectFit="contain"
+            />
+          </Box>
+        </Flex>
+
+
+        {/* Directions Grid */}
+        <RadioGroup
+          onChange={(value) => setFormData({ ...formData, direction: value })}
+          value={formData.direction}
         >
-          {/* Center Compass */}
-          <Image
-            position="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-            src={CompassImage}
-            width="180px"
-            height="180px"
-            zIndex={10}
-          />
-
-
-          {/* Bottom Fixed Road */}
-          <Image
-            position="absolute"
-            bottom="20px"
-            left="50%"
-            transform="translateX(-50%)"
-            src={RoadImage}
-            width="100px"
-            height="32px"
-            objectFit="cover"
-          />
-
-
-          {/* Top (Back) */}
-          {backImage && (
-            <Image
-              position="absolute"
-              top="20px"
-              left="50%"
-              transform="translateX(-50%)"
-              src={backImage}
-              width="100px"
-              height="32px"
-              objectFit="cover"
-              opacity={1}
-            />
-          )}
-
-
-          {/* Left */}
-          {leftImage && (
-            <Image
-              position="absolute"
-              left="20px"
-              top="50%"
-              transform="translateY(-50%) rotate(-90deg)"
-              transformOrigin="center"
-              src={leftImage}
-              width="100px"
-              height="32px"
-              objectFit="cover"
-              opacity={1}
-            />
-          )}
-
-
-          {/* Right */}
-          {rightImage && (
-            <Image
-              position="absolute"
-              right="20px"
-              top="50%"
-              transform="translateY(-50%) rotate(90deg)"
-              transformOrigin="center"
-              src={rightImage}
-              width="100px"
-              height="32px"
-              objectFit="cover"
-              opacity={1}
-            />
-          )}
-        </Box>
-
-
-        {/* Radio Group Section - Broader & Comfortable */}
-        <Stack spacing={4} mx="auto" w="100%">
-          {sides.map(({ key, label }) => (
-            <Box key={key}>
-              <Text 
-                fontWeight="600" 
-                fontSize="14px" 
-                mb={2.5} 
-                color="gray.700"
-                letterSpacing="-0.01em"
+          <SimpleGrid columns={2} spacing={3} maxW="340px" mx="auto">
+            {Object.keys(directionAngles).map((dir) => (
+              <Box
+                key={dir}
+                p={2.5}
+                bg={formData.direction === dir ? "cyan.50" : "white"}
+                border="1px solid"
+                borderColor={formData.direction === dir ? "cyan.500" : "gray.200"}
+                borderRadius="8px"
+                transition="all 0.2s ease"
+                cursor="pointer"
+                _hover={{
+                  borderColor: "cyan.300",
+                  bg: "cyan.50",
+                }}
               >
-                Select what is in your {label}
-              </Text>
-              <RadioGroup
-                onChange={(value) => updatePeriphery(key, value)}
-                value={formData.peripheries[key] || ""}
-              >
-                <Flex gap={6} align="center" flexWrap="wrap">
-                  <Radio value="Neighbour Plot" colorScheme="cyan" size="md">
-                    <Flex align="center" gap={2.5}>
-                      <Box 
-                        w="26px" 
-                        h="26px" 
-                        bg="orange.100" 
-                        borderRadius="6px" 
-                        display="flex" 
-                        alignItems="center" 
-                        justifyContent="center"
-                        fontSize="15px"
-                      >
-                        🏠
-                      </Box>
-                      <Text fontSize="14px" color="gray.700" fontWeight="500">
-                        Neighbour Plot
-                      </Text>
-                    </Flex>
-                  </Radio>
-
-
-                  <Radio value="Road" colorScheme="cyan" size="md">
-                    <Flex align="center" gap={2.5}>
-                      <Box 
-                        w="26px" 
-                        h="26px" 
-                        bg="gray.800" 
-                        borderRadius="6px" 
-                        display="flex" 
-                        alignItems="center" 
-                        justifyContent="center"
-                      >
-                        <Box w="16px" h="2px" bg="white" borderRadius="full" />
-                      </Box>
-                      <Text fontSize="14px" color="gray.700" fontWeight="500">
-                        Road
-                      </Text>
-                    </Flex>
-                  </Radio>
-                </Flex>
-              </RadioGroup>
-            </Box>
-          ))}
-        </Stack>
+                <Radio value={dir} size="md" colorScheme="cyan">
+                  <Text fontSize="13px" fontWeight="500" color="gray.700">
+                    {dir.charAt(0).toUpperCase() + dir.slice(1).replace("-", " - ")}
+                  </Text>
+                </Radio>
+              </Box>
+            ))}
+          </SimpleGrid>
+        </RadioGroup>
       </Box>
 
 
       {/* Fixed Navigation Buttons */}
-      <Flex justify="space-between" gap={3} flexShrink={0}>
+      <Flex justify="space-between" gap={3}>
         <Button
           onClick={onBack}
           variant="solid"
@@ -235,9 +130,10 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
         >
           ← Previous
         </Button>
-        
+
         <Button
           onClick={handleAction}
+          isDisabled={!formData.direction}
           variant="solid"
           bg="cyan.500"
           color="white"
@@ -250,6 +146,11 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
           ml="auto"
           _hover={{
             bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
           }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
