@@ -196,9 +196,9 @@ export default function PlanningFormPage() {
         </Box>
 
 
-        <Heading size="md" mb={6} textAlign="left" fontWeight="semibold">
+        {/* <Heading size="md" mb={6} textAlign="left" fontWeight="semibold">
           Planning Form
-        </Heading>
+        </Heading> */}
 
 
         <Box flex="1">{renderStep()}</Box>

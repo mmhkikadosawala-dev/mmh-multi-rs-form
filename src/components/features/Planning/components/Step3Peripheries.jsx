@@ -56,96 +56,175 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
       {/* Content Area */}
       <Box>
         {/* Compass & Images */}
-        <Box 
-          position="relative" 
-          height="200px" 
-          mb={5} 
-          mx="auto" 
-          maxWidth="280px"
+        <Box
+          position="relative"
+          height="260px"
+          mb={5}
+          mx="auto"
+          maxWidth="320px"
           bg="gray.50"
           borderRadius="12px"
           p={4}
         >
           {/* Center Compass */}
           <Image
-  position="absolute"
-  top="50%"
-  left="50%"
-  transform="translate(-50%, -50%)"
-  src={CompassImage}
-  width="140px"
-  height="140px"
-  zIndex={10}
-/>
-
-          {/* Bottom Fixed Road */}
-          <Image
             position="absolute"
-            bottom="16px"
+            top="50%"
             left="50%"
-            transform="translateX(-50%)"
-            src={RoadImage}
-            width="90px"
-            height="28px"
-            objectFit="cover"
+            transform="translate(-50%, -50%)"
+            src={CompassImage}
+            width="170px"
+            height="170px"
+            zIndex={10}
           />
 
-          {/* Top (Back) */}
+          {/* Top - BACK Label (Always visible) */}
+          <Text
+            position="absolute"
+            top="4px"
+            left="50%"
+            transform="translateX(-50%)"
+            fontSize="10px"
+            fontWeight="600"
+            color="gray.600"
+            textAlign="center"
+            letterSpacing="0.5px"
+            zIndex={5}
+          >
+            BACK
+          </Text>
+
+          {/* Top - Back Side Image */}
           {backImage && (
-            <Image
+            <Box
               position="absolute"
-              top="16px"
+              top="22px"
               left="50%"
               transform="translateX(-50%)"
-              src={backImage}
+            >
+              <Image
+                src={backImage}
+                width="90px"
+                height="28px"
+                objectFit="cover"
+              />
+            </Box>
+          )}
+
+          {/* Bottom - FRONT Label (Always visible) */}
+          <Text
+            position="absolute"
+            bottom="4px"
+            left="50%"
+            transform="translateX(-50%)"
+            fontSize="10px"
+            fontWeight="600"
+            color="gray.600"
+            textAlign="center"
+            letterSpacing="0.5px"
+            zIndex={5}
+          >
+            FRONT
+          </Text>
+
+          {/* Bottom - Front Side Road Image (Always visible) */}
+          <Box
+            position="absolute"
+            bottom="22px"
+            left="50%"
+            transform="translateX(-50%)"
+          >
+            <Image
+              src={RoadImage}
               width="90px"
               height="28px"
               objectFit="cover"
-              opacity={1}
             />
-          )}
+          </Box>
 
-          {/* Left */}
+          {/* Left - LEFT Label (Always visible) */}
+          <Text
+            position="absolute"
+            left="4px"
+            top="50%"
+            transform="translateY(-50%) rotate(-90deg)"
+            transformOrigin="center"
+            fontSize="10px"
+            fontWeight="600"
+            color="gray.600"
+            textAlign="center"
+            letterSpacing="0.5px"
+            whiteSpace="nowrap"
+            zIndex={5}
+          >
+            LEFT
+          </Text>
+
+          {/* Left Side Image */}
           {leftImage && (
-            <Image
+            <Box
               position="absolute"
-              left="16px"
+              left="22px"
               top="50%"
-              transform="translateY(-50%) rotate(-90deg)"
-              transformOrigin="center"
-              src={leftImage}
-              width="90px"
-              height="28px"
-              objectFit="cover"
-              opacity={1}
-            />
+              transform="translateY(-50%)"
+            >
+              <Image
+                transform="rotate(-90deg)"
+                transformOrigin="center"
+                src={leftImage}
+                width="90px"
+                height="28px"
+                objectFit="cover"
+              />
+            </Box>
           )}
 
-          {/* Right */}
+          {/* Right - RIGHT Label (Always visible) */}
+          <Text
+            position="absolute"
+            right="4px"
+            top="50%"
+            transform="translateY(-50%) rotate(90deg)"
+            transformOrigin="center"
+            fontSize="10px"
+            fontWeight="600"
+            color="gray.600"
+            textAlign="center"
+            letterSpacing="0.5px"
+            whiteSpace="nowrap"
+            zIndex={5}
+          >
+            RIGHT
+          </Text>
+
+          {/* Right Side Image */}
           {rightImage && (
-            <Image
+            <Box
               position="absolute"
-              right="16px"
+              right="22px"
               top="50%"
-              transform="translateY(-50%) rotate(90deg)"
-              transformOrigin="center"
-              src={rightImage}
-              width="90px"
-              height="28px"
-              objectFit="cover"
-              opacity={1}
-            />
+              transform="translateY(-50%)"
+            >
+              <Image
+                transform="rotate(90deg)"
+                transformOrigin="center"
+                src={rightImage}
+                width="90px"
+                height="28px"
+                objectFit="cover"
+              />
+            </Box>
           )}
         </Box>
 
-        {/* Radio Group Section - Broader & Comfortable */}
+        {/* Radio Group Section */}
         <Stack spacing={4} mx="auto" w="100%">
           {sides.map(({ key, label }) => (
             <Box key={key}>
-              <Text 
-                fontWeight="600" 
-                fontSize="14px" 
-                mb={2.5} 
+              <Text
+                fontWeight="600"
+                fontSize="14px"
+                mb={2.5}
                 color="gray.700"
                 letterSpacing="-0.01em"
               >
@@ -158,13 +237,13 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
                 <Flex gap={6} align="center" flexWrap="wrap">
                   <Radio value="Neighbour Plot" colorScheme="cyan" size="md">
                     <Flex align="center" gap={2.5}>
-                      <Box 
-                        w="26px" 
-                        h="26px" 
-                        bg="orange.100" 
-                        borderRadius="6px" 
-                        display="flex" 
-                        alignItems="center" 
+                      <Box
+                        w="26px"
+                        h="26px"
+                        bg="orange.100"
+                        borderRadius="6px"
+                        display="flex"
+                        alignItems="center"
                         justifyContent="center"
                         fontSize="15px"
                       >
@@ -178,13 +257,13 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
 
                   <Radio value="Road" colorScheme="cyan" size="md">
                     <Flex align="center" gap={2.5}>
-                      <Box 
-                        w="26px" 
-                        h="26px" 
-                        bg="gray.800" 
-                        borderRadius="6px" 
-                        display="flex" 
-                        alignItems="center" 
+                      <Box
+                        w="26px"
+                        h="26px"
+                        bg="gray.800"
+                        borderRadius="6px"
+                        display="flex"
+                        alignItems="center"
                         justifyContent="center"
                       >
                         <Box w="16px" h="2px" bg="white" borderRadius="full" />
@@ -222,7 +301,7 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
         >
           ← Previous
         </Button>
-        
+
         <Button
           onClick={handleAction}
           variant="solid"

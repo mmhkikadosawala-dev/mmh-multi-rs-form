@@ -51,6 +51,13 @@ import {
             overflow="hidden"
             boxShadow="sm"
             border={stairType === "internal" ? "2px solid #319795" : "1px solid #E2E8F0"}
+            cursor="pointer"
+            onClick={() => updateStairType("internal")}
+            transition="all 0.2s ease"
+            _hover={{
+              boxShadow: "md",
+              borderColor: "cyan.400",
+            }}
           >
             <Image
               src={InteriorStair}
@@ -78,6 +85,13 @@ import {
             overflow="hidden"
             boxShadow="sm"
             border={stairType === "external" ? "2px solid #319795" : "1px solid #E2E8F0"}
+            cursor="pointer"
+            onClick={() => updateStairType("external")}
+            transition="all 0.2s ease"
+            _hover={{
+              boxShadow: "md",
+              borderColor: "cyan.400",
+            }}
           >
             <Image
               src={ExteriorImage}
@@ -144,4 +158,3 @@ import {
       </Box>
     );
   }
-  

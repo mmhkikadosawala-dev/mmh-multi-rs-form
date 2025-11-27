@@ -153,7 +153,7 @@ export default function Step3ProjectLevel({
                 width="90px"
               >
                 <option value="feet">feet</option>
-                <option value="meters">meters</option>
+                <option value="meters">inches</option>
               </Select>
             </Flex>
           </Box>

@@ -20,8 +20,37 @@ function getSideImage(side, peripheries) {
 }
 
 export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
-  const handleWidthChange = e => setFormData({ ...formData, size: { ...formData.size, width: e.target.value } });
-  const handleDepthChange = e => setFormData({ ...formData, size: { ...formData.size, depth: e.target.value } });
+  const handleWidthFeetChange = e => setFormData({ 
+    ...formData, 
+    size: { ...formData.size, widthFeet: e.target.value } 
+  });
+  
+  const handleWidthInchesChange = e => {
+    const value = e.target.value;
+    // Only allow values between 0 and 11
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({ 
+        ...formData, 
+        size: { ...formData.size, widthInches: value } 
+      });
+    }
+  };
+  
+  const handleDepthFeetChange = e => setFormData({ 
+    ...formData, 
+    size: { ...formData.size, depthFeet: e.target.value } 
+  });
+  
+  const handleDepthInchesChange = e => {
+    const value = e.target.value;
+    // Only allow values between 0 and 11
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({ 
+        ...formData, 
+        size: { ...formData.size, depthInches: value } 
+      });
+    }
+  };
 
   const rightImage = getSideImage("right", formData.peripheries);
   const backImage = getSideImage("back", formData.peripheries);
@@ -43,19 +72,17 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
     >
       {/* Content Area */}
       <Box>
-        {/* Top Input Section */}
-        <Flex 
-          gap={5} 
-          mb={5} 
-          justify="center" 
-          align="center"
+        {/* Top Input Section - Vertical Stack */}
+        <Box
+          mb={5}
           bg="white"
           p={4}
           borderRadius="12px"
           border="1px solid"
           borderColor="gray.200"
         >
-          <Box>
+          {/* Plot Width - Top */}
+          <Box mb={4}>
             <Text 
               fontSize="13px" 
               mb={2} 
@@ -65,11 +92,11 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
             >
               Plot Width
             </Text>
-            <Flex align="center" gap={2}>
+            <Flex align="center" gap={2} justify="center">
               <Input
-                value={formData.size.width || ''}
-                onChange={handleWidthChange}
-                width="70px"
+                value={formData.size.widthFeet || ''}
+                onChange={handleWidthFeetChange}
+                width="80px"
                 h="40px"
                 borderRadius="8px"
                 fontSize="14px"
@@ -89,9 +116,34 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
               <Text fontSize="13px" color="gray.600" fontWeight="500">
                 feet
               </Text>
+              <Input
+                value={formData.size.widthInches || ''}
+                onChange={handleWidthInchesChange}
+                width="70px"
+                h="40px"
+                borderRadius="8px"
+                fontSize="14px"
+                textAlign="center"
+                type="number"
+                min="0"
+                max="11"
+                fontWeight="500"
+                borderColor="gray.300"
+                _hover={{
+                  borderColor: "cyan.400",
+                }}
+                _focus={{
+                  borderColor: "cyan.500",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                }}
+              />
+              <Text fontSize="13px" color="gray.600" fontWeight="500">
+                inches
+              </Text>
             </Flex>
           </Box>
 
+          {/* Plot Depth - Bottom */}
           <Box>
             <Text 
               fontSize="13px" 
@@ -102,11 +154,11 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
             >
               Plot Depth
             </Text>
-            <Flex align="center" gap={2}>
+            <Flex align="center" gap={2} justify="center">
               <Input
-                value={formData.size.depth || ''}
-                onChange={handleDepthChange}
-                width="70px"
+                value={formData.size.depthFeet || ''}
+                onChange={handleDepthFeetChange}
+                width="80px"
                 h="40px"
                 borderRadius="8px"
                 fontSize="14px"
@@ -126,11 +178,35 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
               <Text fontSize="13px" color="gray.600" fontWeight="500">
                 feet
               </Text>
+              <Input
+                value={formData.size.depthInches || ''}
+                onChange={handleDepthInchesChange}
+                width="70px"
+                h="40px"
+                borderRadius="8px"
+                fontSize="14px"
+                textAlign="center"
+                type="number"
+                min="0"
+                max="11"
+                fontWeight="500"
+                borderColor="gray.300"
+                _hover={{
+                  borderColor: "cyan.400",
+                }}
+                _focus={{
+                  borderColor: "cyan.500",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                }}
+              />
+              <Text fontSize="13px" color="gray.600" fontWeight="500">
+                inches
+              </Text>
             </Flex>
           </Box>
-        </Flex>
+        </Box>
 
-        {/* Compass & Images - सिर्फ यही हिस्सा बदला है */}
+        {/* Compass & Images */}
         <Box 
           position="relative" 
           height="200px" 
@@ -141,7 +217,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           borderRadius="12px"
           p={4}
         >
-          {/* बड़ा Compass */}
+          {/* Compass */}
           <Image
             position="absolute"
             top="50%"
@@ -153,7 +229,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
             zIndex={10}
           />
 
-          {/* Bottom Road - बाहर शिफ्ट */}
+          {/* Bottom Road */}
           <Image
             position="absolute"
             bottom="4px"
@@ -214,7 +290,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
         </Box>
       </Box>
 
-      {/* Fixed Navigation Buttons - बिल्कुल वैसे ही जैसे पहले थे */}
+      {/* Fixed Navigation Buttons */}
       <Flex justify="space-between" gap={3} flexShrink={0}>
         <Button
           onClick={onBack}

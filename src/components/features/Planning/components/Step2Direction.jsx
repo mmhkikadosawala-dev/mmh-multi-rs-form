@@ -9,25 +9,36 @@ import {
   Image,
   SimpleGrid,
 } from "@chakra-ui/react";
+import { FiSun } from "react-icons/fi";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
 import RoadWithHuman from "../../../../assets/Planning/RoadImage/roadwithhuman.png";
 
-
+// Compass rose standard angles - clockwise rotation
 const directionAngles = {
-  north: 0,
-  "north-east": 45,
-  east: 90,
-  "south-east": 135,
-  south: 180,
-  "south-west": 225,
-  west: 270,
-  "north-west": 315,
+  north: 0,           // Top
+  "north-east": 45,   // Top-Right
+  east: 90,           // Right
+  "south-east": 135,  // Bottom-Right
+  south: 180,         // Bottom
+  "south-west": 225,  // Bottom-Left
+  west: 270,          // Left
+  "north-west": 315,  // Top-Left
 };
-
 
 export default function Step2PlotDirection({ formData, setFormData, onNext, onSubmit, onBack, isLastStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
 
+  // Calculate compass rotation - selected direction should face DOWN (towards road)
+  // South is already at bottom (180°), so we need to rotate to make selected direction point to 180°
+  const getCompassRotation = () => {
+    if (!formData.direction) return 0;
+    
+    const selectedAngle = directionAngles[formData.direction];
+    // Rotate compass so selected direction points down (180°)
+    return 180 - selectedAngle;
+  };
+
+  const compassRotation = getCompassRotation();
 
   return (
     <Box
@@ -48,23 +59,45 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
           <Text mb={3} fontWeight="600" fontSize="16px" color="gray.700" letterSpacing="-0.01em">
             Plot Direction Compass
           </Text>
+          
+          {/* Compass + Sun Container - ROTATES */}
           <Box
             boxSize="180px"
-            transform={`rotate(${directionAngles[formData.direction] || 0}deg)`}
+            transform={`rotate(${compassRotation}deg)`}
             transition="transform 0.4s ease-in-out"
             display="flex"
             alignItems="center"
             justifyContent="center"
+            position="relative"
           >
+            {/* Compass Image */}
             <Image
               src={CompassImage}
               alt="Rotating Compass"
               boxSize="100%"
               objectFit="contain"
             />
+
+            {/* Sun Icon - Rotates with compass, stays at East position */}
+            <Box
+              position="absolute"
+              top="50%"
+              right="-12px"
+              transform="translateY(-50%)"
+              fontSize="26px"
+              sx={{
+                "& svg": {
+                  fill: "#FF8C00",
+                  stroke: "#FF8C00",
+                  color: "#FF8C00",
+                }
+              }}
+            >
+              <FiSun color="#FF8C00" fill="#FF8C00" />
+            </Box>
           </Box>
 
-          {/* Road with Human Image - Smaller size */}
+          {/* Road with Human Image - FIXED at bottom */}
           <Box mt={2} mb={2}>
             <Image
               src={RoadWithHuman}
@@ -73,8 +106,14 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
               objectFit="contain"
             />
           </Box>
-        </Flex>
 
+          {/* Direction Label */}
+          {/* {formData.direction && (
+            <Text fontSize="12px" fontWeight="600" color="cyan.600" mt={1}>
+              {formData.direction.charAt(0).toUpperCase() + formData.direction.slice(1).replace("-", " - ")} facing road
+            </Text>
+          )} */}
+        </Flex>
 
         {/* Directions Grid */}
         <RadioGroup
@@ -92,6 +131,7 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
                 borderRadius="8px"
                 transition="all 0.2s ease"
                 cursor="pointer"
+                onClick={() => setFormData({ ...formData, direction: dir })}
                 _hover={{
                   borderColor: "cyan.300",
                   bg: "cyan.50",
@@ -107,7 +147,6 @@ export default function Step2PlotDirection({ formData, setFormData, onNext, onSu
           </SimpleGrid>
         </RadioGroup>
       </Box>
-
 
       {/* Fixed Navigation Buttons */}
       <Flex justify="space-between" gap={3}>

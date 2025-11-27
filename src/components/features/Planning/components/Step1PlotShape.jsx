@@ -14,10 +14,9 @@ import NonRectangular from "../../../../assets/Planning/Step1PlotShape/ir-rectun
 
 export default function Step1PlotShape({ formData, setFormData, onNext, onPrevious, onSubmit, isLastStep, isFirstStep }) {
   const handleAction = isLastStep ? onSubmit : onNext;
-  const navigate = useNavigate(); // hook to navigate programmatically
+  const navigate = useNavigate();
 
   const onPreviousNavigate = () => {
-    // Navigate to the root route "/"
     navigate('/');
   };
 
@@ -64,6 +63,8 @@ export default function Step1PlotShape({ formData, setFormData, onNext, onPrevio
                 width="180px"
                 mx="auto"
                 transition="all 0.2s ease"
+                cursor="pointer"
+                onClick={() => setFormData({ ...formData, shape: "rectangular" })}
                 _hover={{
                   borderColor: "cyan.300",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
@@ -101,6 +102,8 @@ export default function Step1PlotShape({ formData, setFormData, onNext, onPrevio
                 width="180px"
                 mx="auto"
                 transition="all 0.2s ease"
+                cursor="pointer"
+                onClick={() => setFormData({ ...formData, shape: "irregular" })}
                 _hover={{
                   borderColor: "cyan.300",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",

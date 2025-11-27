@@ -13,6 +13,8 @@ import {
   Image,
   Textarea,
   VStack,
+  HStack,
+  Circle,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import FloorRequirement from "../../../../assets/Planning/FloorRequirement/Rectangle389.png";
@@ -91,14 +93,22 @@ export default function Step11FloorSpaceRequirements({
     }
   };
 
+  function getOrdinalSuffix(num) {
+    const j = num % 10;
+    const k = num % 100;
+    if (j === 1 && k !== 11) return "st";
+    if (j === 2 && k !== 12) return "nd";
+    if (j === 3 && k !== 13) return "rd";
+    return "th";
+  }
+
   function floorLabel(idx) {
-    if (idx === 0) return "Ground Floor Space Requirements";
-    if (idx === 1) return "First Floor Space Requirements";
-    if (idx === 2) return "Second Floor Space Requirements";
-    const suffix = ["th", "st", "nd", "rd"];
-    let v = idx + 1;
-    let suf = suffix[v % 100 >= 11 && v % 100 <= 13 ? 0 : v % 10 < 4 ? v % 10 : 0] || "th";
-    return `${v}${suf} Floor Space Requirements`;
+    if (idx === 0) return "Ground Floor";
+    if (idx === 1) return "First Floor";
+    if (idx === 2) return "Second Floor";
+    if (idx === 3) return "Third Floor";
+    const floorNum = idx;
+    return `${floorNum}${getOrdinalSuffix(floorNum)} Floor`;
   }
 
   return (
@@ -113,6 +123,52 @@ export default function Step11FloorSpaceRequirements({
       px={4}
       py={6}
     >
+      {/* Floor Progress Indicator */}
+      <Box mb={4}>
+        <HStack spacing={2} justify="center" mb={2}>
+          {Array.from({ length: floorsCount }).map((_, idx) => (
+            <HStack key={idx} spacing={1}>
+              <Circle
+                size="32px"
+                bg={idx === activeFloor ? "cyan.500" : idx < activeFloor ? "cyan.200" : "gray.200"}
+                color={idx === activeFloor ? "white" : idx < activeFloor ? "cyan.700" : "gray.500"}
+                fontWeight="600"
+                fontSize="13px"
+                border="2px solid"
+                borderColor={idx === activeFloor ? "cyan.600" : "transparent"}
+                transition="all 0.3s ease"
+              >
+                {idx + 1}
+              </Circle>
+              {idx < floorsCount - 1 && (
+                <Box
+                  w="20px"
+                  h="2px"
+                  bg={idx < activeFloor ? "cyan.300" : "gray.300"}
+                  transition="all 0.3s ease"
+                />
+              )}
+            </HStack>
+          ))}
+        </HStack>
+        <Text 
+          textAlign="center" 
+          fontSize="14px" 
+          fontWeight="600" 
+          color="cyan.600"
+        >
+          {floorLabel(activeFloor)} Space Requirements
+        </Text>
+        <Text 
+          textAlign="center" 
+          fontSize="12px" 
+          color="gray.500"
+          mt={1}
+        >
+          Step {activeFloor + 1} of {floorsCount}
+        </Text>
+      </Box>
+
       {/* Scrollable Content Area */}
       <Box 
         flex="1" 
@@ -137,11 +193,6 @@ export default function Step11FloorSpaceRequirements({
         }}
       >
         <VStack spacing={4} align="stretch">
-          {/* Heading */}
-          <Text fontWeight="600" color="gray.700" fontSize="16px" mb={1} letterSpacing="-0.01em">
-            {floorLabel(activeFloor)}
-          </Text>
-
           {/* No of Master Bedrooms */}
           <Flex align="center" gap={3}>
             <Text flex="1" fontWeight="500" fontSize="14px" color="gray.700">
@@ -169,7 +220,7 @@ export default function Step11FloorSpaceRequirements({
           </Flex>
 
           {/* With Attached Toilet */}
-          <Flex align="center">
+          <Flex align="center" cursor="pointer" onClick={() => updateFloorField("withAttached", !current.withAttached)}>
             <Radio
               size="md"
               colorScheme="cyan"
@@ -323,7 +374,7 @@ export default function Step11FloorSpaceRequirements({
             bg: "cyan.600",
           }}
         >
-          Next →
+          {activeFloor < floorsCount - 1 ? "Next Floor →" : "Next →"}
         </Button>
       </Flex>
     </Box>
