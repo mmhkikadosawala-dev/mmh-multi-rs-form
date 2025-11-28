@@ -24,8 +24,7 @@ function toPosNum(v, fallback) {
 }
 
 function getCentroid(points) {
-  let x = 0,
-    y = 0;
+  let x = 0, y = 0;
   for (const p of points) {
     x += p.x;
     y += p.y;
@@ -42,7 +41,6 @@ function clampOffset(offset, front, back, left, right, minSeparation) {
   return Math.max(minO, Math.min(maxO, offset));
 }
 
-// angle at point B between BA and BC (in degrees)
 function angleBetween(A, B, C) {
   const v1x = A.x - B.x;
   const v1y = A.y - B.y;
@@ -60,6 +58,13 @@ function angleBetween(A, B, C) {
   return (rad * 180) / Math.PI;
 }
 
+// Convert feet + inches to decimal feet
+function convertToDecimalFeet(feet, inches) {
+  const f = parseFloat(feet) || 0;
+  const i = parseFloat(inches) || 0;
+  return f + (i / 12);
+}
+
 export default function Step4PlotSizeNonRectangular({
   formData,
   setFormData,
@@ -68,26 +73,70 @@ export default function Step4PlotSizeNonRectangular({
   onBack,
   isLastStep,
 }) {
-  const handleFrontChange = (e) =>
+  // Handlers for feet inputs
+  const handleFrontFeetChange = (e) =>
     setFormData({
       ...formData,
-      size: { ...(formData.size || {}), front: e.target.value },
+      size: { ...(formData.size || {}), frontFeet: e.target.value },
     });
-  const handleBackChange = (e) =>
+  
+  const handleFrontInchesChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({
+        ...formData,
+        size: { ...(formData.size || {}), frontInches: value },
+      });
+    }
+  };
+
+  const handleBackFeetChange = (e) =>
     setFormData({
       ...formData,
-      size: { ...(formData.size || {}), back: e.target.value },
+      size: { ...(formData.size || {}), backFeet: e.target.value },
     });
-  const handleLeftChange = (e) =>
+  
+  const handleBackInchesChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({
+        ...formData,
+        size: { ...(formData.size || {}), backInches: value },
+      });
+    }
+  };
+
+  const handleLeftFeetChange = (e) =>
     setFormData({
       ...formData,
-      size: { ...(formData.size || {}), left: e.target.value },
+      size: { ...(formData.size || {}), leftFeet: e.target.value },
     });
-  const handleRightChange = (e) =>
+  
+  const handleLeftInchesChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({
+        ...formData,
+        size: { ...(formData.size || {}), leftInches: value },
+      });
+    }
+  };
+
+  const handleRightFeetChange = (e) =>
     setFormData({
       ...formData,
-      size: { ...(formData.size || {}), right: e.target.value },
+      size: { ...(formData.size || {}), rightFeet: e.target.value },
     });
+  
+  const handleRightInchesChange = (e) => {
+    const value = e.target.value;
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({
+        ...formData,
+        size: { ...(formData.size || {}), rightInches: value },
+      });
+    }
+  };
 
   const svgRef = useRef(null);
   const [points, setPoints] = useState(null);
@@ -96,26 +145,44 @@ export default function Step4PlotSizeNonRectangular({
   const [currentScale, setCurrentScale] = useState(4);
   const [viewBox, setViewBox] = useState("0 0 400 400");
 
-  // defaults once
+  // defaults once - inches empty by default
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
       size: {
         ...(prev.size || {}),
-        front: prev.size?.front ?? 70,
-        back: prev.size?.back ?? 50,
-        left: prev.size?.left ?? 40,
-        right: prev.size?.right ?? 50,
+        frontFeet: prev.size?.frontFeet ?? "70",
+        frontInches: prev.size?.frontInches ?? "",
+        backFeet: prev.size?.backFeet ?? "50",
+        backInches: prev.size?.backInches ?? "",
+        leftFeet: prev.size?.leftFeet ?? "40",
+        leftInches: prev.size?.leftInches ?? "",
+        rightFeet: prev.size?.rightFeet ?? "50",
+        rightInches: prev.size?.rightInches ?? "",
         offset: prev.size?.offset ?? 0,
       },
     }));
   }, [setFormData]);
 
   useEffect(() => {
-    const front = toPosNum(formData.size?.front, 70);
-    const back = toPosNum(formData.size?.back, 50);
-    const left = toPosNum(formData.size?.left, 40);
-    const right = toPosNum(formData.size?.right, 50);
+    // Convert feet+inches to decimal feet for calculations
+    const front = convertToDecimalFeet(
+      formData.size?.frontFeet || "70",
+      formData.size?.frontInches || "0"
+    );
+    const back = convertToDecimalFeet(
+      formData.size?.backFeet || "50",
+      formData.size?.backInches || "0"
+    );
+    const left = convertToDecimalFeet(
+      formData.size?.leftFeet || "40",
+      formData.size?.leftInches || "0"
+    );
+    const right = convertToDecimalFeet(
+      formData.size?.rightFeet || "50",
+      formData.size?.rightInches || "0"
+    );
+    
     let offset = parseFloat(formData.size?.offset) || 0;
 
     const minSeparation = 1;
@@ -191,10 +258,22 @@ export default function Step4PlotSizeNonRectangular({
 
   const handleMouseUp = useCallback(() => {
     if (dragging && points) {
-      const back = toPosNum(formData.size?.back, 50);
-      const front = toPosNum(formData.size?.front, 70);
-      const left = toPosNum(formData.size?.left, 40);
-      const right = toPosNum(formData.size?.right, 50);
+      const front = convertToDecimalFeet(
+        formData.size?.frontFeet,
+        formData.size?.frontInches
+      );
+      const back = convertToDecimalFeet(
+        formData.size?.backFeet,
+        formData.size?.backInches
+      );
+      const left = convertToDecimalFeet(
+        formData.size?.leftFeet,
+        formData.size?.leftInches
+      );
+      const right = convertToDecimalFeet(
+        formData.size?.rightFeet,
+        formData.size?.rightInches
+      );
 
       let new_offset;
       if (dragging === "backLine") {
@@ -240,10 +319,22 @@ export default function Step4PlotSizeNonRectangular({
       const mouseX = e.clientX - svg_rect.left;
       const logical_mouse_x = (mouseX - points.svgCenterX) / currentScale + points.centerX;
 
-      const front = toPosNum(formData.size?.front, 70);
-      const back = toPosNum(formData.size?.back, 50);
-      const left = toPosNum(formData.size?.left, 40);
-      const right = toPosNum(formData.size?.right, 50);
+      const front = convertToDecimalFeet(
+        formData.size?.frontFeet,
+        formData.size?.frontInches
+      );
+      const back = convertToDecimalFeet(
+        formData.size?.backFeet,
+        formData.size?.backInches
+      );
+      const left = convertToDecimalFeet(
+        formData.size?.leftFeet,
+        formData.size?.leftInches
+      );
+      const right = convertToDecimalFeet(
+        formData.size?.rightFeet,
+        formData.size?.rightInches
+      );
 
       const delta = logical_mouse_x - initialDragX;
       const current_offset = parseFloat(formData.size?.offset) || 0;
@@ -404,7 +495,7 @@ export default function Step4PlotSizeNonRectangular({
             opacity="0.95"
           />
           <text x={frontLabelPos.x} y={frontLabelPos.y + 16} textAnchor="middle" fontSize="10" fontWeight="600" fill="#38a169">
-            {Math.abs(bl.x - br.x).toFixed(1)}ft
+            {formData.size?.frontFeet || 0}'{formData.size?.frontInches || 0}"
           </text>
         </g>
 
@@ -421,7 +512,7 @@ export default function Step4PlotSizeNonRectangular({
             opacity="0.95"
           />
           <text x={backLabelPos.x} y={backLabelPos.y - 18} textAnchor="middle" fontSize="10" fontWeight="600" fill="#38a169">
-            {Math.abs(tl.x - tr.x).toFixed(1)}ft
+            {formData.size?.backFeet || 0}'{formData.size?.backInches || 0}"
           </text>
         </g>
 
@@ -438,7 +529,7 @@ export default function Step4PlotSizeNonRectangular({
             opacity="0.95"
           />
           <text x={leftTextX} y={leftLabelPos.y + 3} textAnchor="middle" fontSize="10" fontWeight="600" fill="#ed8936">
-            {lineLength(bl, tl)}ft
+            {formData.size?.leftFeet || 0}'{formData.size?.leftInches || 0}"
           </text>
         </g>
 
@@ -455,7 +546,7 @@ export default function Step4PlotSizeNonRectangular({
             opacity="0.95"
           />
           <text x={rightTextX} y={rightLabelPos.y + 3} textAnchor="middle" fontSize="10" fontWeight="600" fill="#ed8936">
-            {lineLength(br, tr)}ft
+            {formData.size?.rightFeet || 0}'{formData.size?.rightInches || 0}"
           </text>
         </g>
 
@@ -497,7 +588,24 @@ export default function Step4PlotSizeNonRectangular({
     );
   };
 
-  const handleAction = isLastStep ? onSubmit : onNext;
+  // Validation: Check if all feet fields have values
+  const isFormValid = () => {
+    const frontFeet = formData.size?.frontFeet;
+    const backFeet = formData.size?.backFeet;
+    const leftFeet = formData.size?.leftFeet;
+    const rightFeet = formData.size?.rightFeet;
+    
+    return frontFeet && backFeet && leftFeet && rightFeet &&
+           parseFloat(frontFeet) > 0 && parseFloat(backFeet) > 0 &&
+           parseFloat(leftFeet) > 0 && parseFloat(rightFeet) > 0;
+  };
+
+  const handleAction = () => {
+    if (isFormValid()) {
+      if (isLastStep) onSubmit();
+      else onNext();
+    }
+  };
 
   // All 4 corner angles
   let angleBL = 0;
@@ -506,14 +614,9 @@ export default function Step4PlotSizeNonRectangular({
   let angleTR = 0;
   if (points) {
     const { bl, br, tl, tr } = points;
-
-    // BL between left (BL→TL) and front (BL→BR)
     angleBL = angleBetween(tl, bl, br);
-    // BR between front (BR→BL) and right (BR→TR)
     angleBR = angleBetween(bl, br, tr);
-    // TL between left (TL→BL) and back (TL→TR)
     angleTL = angleBetween(bl, tl, tr);
-    // TR between back (TR→TL) and right (TR→BR)
     angleTR = angleBetween(tl, tr, br);
   }
 
@@ -550,96 +653,184 @@ export default function Step4PlotSizeNonRectangular({
             Enter dimensions below or drag the top corners to adjust shape
           </Text>
 
-          {/* Inputs */}
+          {/* Inputs with Feet + Inches */}
           <Box bg="white" p={4} borderRadius="12px" border="1px solid" borderColor="gray.200">
             <VStack spacing={3}>
-              <HStack spacing={3} width="100%">
-                <Box flex="1">
-                  <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
-                    Front Width
-                  </Text>
-                  <InputGroup size="sm">
+              {/* Front Width */}
+              <Box width="100%">
+                <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
+                  Front Width <Text as="span" color="red.500">*</Text>
+                </Text>
+                <HStack spacing={2}>
+                  <InputGroup size="sm" flex="1">
                     <Input
-                      value={formData.size?.front ?? ""}
-                      onChange={handleFrontChange}
+                      value={formData.size?.frontFeet ?? ""}
+                      onChange={handleFrontFeetChange}
                       type="number"
-                      min="1"
+                      min="0"
+                      placeholder="0"
                       bg="white"
                       borderColor="green.300"
                       fontSize="13px"
+                      textAlign="center"
                       _focus={{ borderColor: "green.500", boxShadow: "0 0 0 1px #38a169" }}
                     />
-                    <InputRightAddon bg="green.100" color="green.700" fontSize="12px">
+                    <InputRightAddon bg="green.100" color="green.700" fontSize="11px">
                       ft
                     </InputRightAddon>
                   </InputGroup>
-                </Box>
-
-                <Box flex="1">
-                  <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
-                    Back Width
-                  </Text>
-                  <InputGroup size="sm">
+                  <InputGroup size="sm" flex="1">
                     <Input
-                      value={formData.size?.back ?? ""}
-                      onChange={handleBackChange}
+                      value={formData.size?.frontInches ?? ""}
+                      onChange={handleFrontInchesChange}
                       type="number"
-                      min="1"
+                      min="0"
+                      max="11"
+                      placeholder=""
                       bg="white"
                       borderColor="green.300"
                       fontSize="13px"
+                      textAlign="center"
                       _focus={{ borderColor: "green.500", boxShadow: "0 0 0 1px #38a169" }}
                     />
-                    <InputRightAddon bg="green.100" color="green.700" fontSize="12px">
+                    <InputRightAddon bg="green.100" color="green.700" fontSize="11px">
+                      in
+                    </InputRightAddon>
+                  </InputGroup>
+                </HStack>
+              </Box>
+
+              {/* Back Width */}
+              <Box width="100%">
+                <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
+                  Back Width <Text as="span" color="red.500">*</Text>
+                </Text>
+                <HStack spacing={2}>
+                  <InputGroup size="sm" flex="1">
+                    <Input
+                      value={formData.size?.backFeet ?? ""}
+                      onChange={handleBackFeetChange}
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      bg="white"
+                      borderColor="green.300"
+                      fontSize="13px"
+                      textAlign="center"
+                      _focus={{ borderColor: "green.500", boxShadow: "0 0 0 1px #38a169" }}
+                    />
+                    <InputRightAddon bg="green.100" color="green.700" fontSize="11px">
                       ft
                     </InputRightAddon>
                   </InputGroup>
-                </Box>
-              </HStack>
-
-              <HStack spacing={3} width="100%">
-                <Box flex="1">
-                  <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
-                    Left Depth
-                  </Text>
-                  <InputGroup size="sm">
+                  <InputGroup size="sm" flex="1">
                     <Input
-                      value={formData.size?.left ?? ""}
-                      onChange={handleLeftChange}
+                      value={formData.size?.backInches ?? ""}
+                      onChange={handleBackInchesChange}
                       type="number"
-                      min="1"
+                      min="0"
+                      max="11"
+                      placeholder=""
+                      bg="white"
+                      borderColor="green.300"
+                      fontSize="13px"
+                      textAlign="center"
+                      _focus={{ borderColor: "green.500", boxShadow: "0 0 0 1px #38a169" }}
+                    />
+                    <InputRightAddon bg="green.100" color="green.700" fontSize="11px">
+                      in
+                    </InputRightAddon>
+                  </InputGroup>
+                </HStack>
+              </Box>
+
+              {/* Left Depth */}
+              <Box width="100%">
+                <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
+                  Left Depth <Text as="span" color="red.500">*</Text>
+                </Text>
+                <HStack spacing={2}>
+                  <InputGroup size="sm" flex="1">
+                    <Input
+                      value={formData.size?.leftFeet ?? ""}
+                      onChange={handleLeftFeetChange}
+                      type="number"
+                      min="0"
+                      placeholder="0"
                       bg="white"
                       borderColor="orange.300"
                       fontSize="13px"
+                      textAlign="center"
                       _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px #ed8936" }}
                     />
-                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="12px">
+                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="11px">
                       ft
                     </InputRightAddon>
                   </InputGroup>
-                </Box>
-
-                <Box flex="1">
-                  <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
-                    Right Depth
-                  </Text>
-                  <InputGroup size="sm">
+                  <InputGroup size="sm" flex="1">
                     <Input
-                      value={formData.size?.right ?? ""}
-                      onChange={handleRightChange}
+                      value={formData.size?.leftInches ?? ""}
+                      onChange={handleLeftInchesChange}
                       type="number"
-                      min="1"
+                      min="0"
+                      max="11"
+                      placeholder=""
                       bg="white"
                       borderColor="orange.300"
                       fontSize="13px"
+                      textAlign="center"
                       _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px #ed8936" }}
                     />
-                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="12px">
+                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="11px">
+                      in
+                    </InputRightAddon>
+                  </InputGroup>
+                </HStack>
+              </Box>
+
+              {/* Right Depth */}
+              <Box width="100%">
+                <Text fontSize="12px" mb={1.5} color="gray.600" fontWeight="500">
+                  Right Depth <Text as="span" color="red.500">*</Text>
+                </Text>
+                <HStack spacing={2}>
+                  <InputGroup size="sm" flex="1">
+                    <Input
+                      value={formData.size?.rightFeet ?? ""}
+                      onChange={handleRightFeetChange}
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      bg="white"
+                      borderColor="orange.300"
+                      fontSize="13px"
+                      textAlign="center"
+                      _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px #ed8936" }}
+                    />
+                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="11px">
                       ft
                     </InputRightAddon>
                   </InputGroup>
-                </Box>
-              </HStack>
+                  <InputGroup size="sm" flex="1">
+                    <Input
+                      value={formData.size?.rightInches ?? ""}
+                      onChange={handleRightInchesChange}
+                      type="number"
+                      min="0"
+                      max="11"
+                      placeholder=""
+                      bg="white"
+                      borderColor="orange.300"
+                      fontSize="13px"
+                      textAlign="center"
+                      _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px #ed8936" }}
+                    />
+                    <InputRightAddon bg="orange.100" color="orange.700" fontSize="11px">
+                      in
+                    </InputRightAddon>
+                  </InputGroup>
+                </HStack>
+              </Box>
             </VStack>
           </Box>
 
@@ -725,6 +916,7 @@ export default function Step4PlotSizeNonRectangular({
 
         <Button
           onClick={handleAction}
+          isDisabled={!isFormValid()}
           variant="solid"
           bg="cyan.500"
           color="white"
@@ -737,6 +929,11 @@ export default function Step4PlotSizeNonRectangular({
           ml="auto"
           _hover={{
             bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
           }}
         >
           {isLastStep ? "Submit" : "Next →"}

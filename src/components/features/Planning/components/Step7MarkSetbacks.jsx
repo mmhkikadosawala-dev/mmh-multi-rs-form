@@ -1,3 +1,4 @@
+// src/features/Planning/components/Step7MarkSetbacks.jsx
 import {
   Box,
   Flex,
@@ -10,6 +11,7 @@ import {
   FormControl,
   FormLabel,
   Divider,
+  HStack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -60,6 +62,20 @@ export default function Step7MarkSetbacks({
     return Math.round(Math.hypot(p2.x - p1.x, p2.y - p1.y) * 10) / 10;
   };
 
+  const convertToFeetInches = (totalFeet) => {
+    const feet = Math.floor(totalFeet);
+    const inches = Math.round((totalFeet - feet) * 12);
+    return { feet, inches };
+  };
+
+  const formatDistance = (distance) => {
+    const { feet, inches } = convertToFeetInches(distance);
+    if (inches === 0) {
+      return `${feet}'`;
+    }
+    return `${feet}'${inches}"`;
+  };
+
   const pointInPolygon = useCallback((point, vs) => {
     const x = point.x;
     const y = point.y;
@@ -90,11 +106,12 @@ export default function Step7MarkSetbacks({
     [modelPoints, pointInPolygon]
   );
 
+  // Calculate model points
   useEffect(() => {
     const convertToFeet = (feet, inches) => {
       const f = parseFloat(feet) || 0;
       const i = parseFloat(inches) || 0;
-      return f + i / 12;
+      return f + (i / 12);
     };
 
     let fw, bw, ld, rd;
@@ -111,38 +128,51 @@ export default function Step7MarkSetbacks({
       );
       rd = ld;
     } else {
-      fw = parseFloat(formData.size?.front) || 0;
-      bw = parseFloat(formData.size?.back) || 0;
-      ld = parseFloat(formData.size?.left) || 0;
-      rd = parseFloat(formData.size?.right) || 0;
+      if (formData.size?.frontFeet !== undefined) {
+        fw = convertToFeet(formData.size?.frontFeet, formData.size?.frontInches);
+        bw = convertToFeet(formData.size?.backFeet, formData.size?.backInches);
+        ld = convertToFeet(formData.size?.leftFeet, formData.size?.leftInches);
+        rd = convertToFeet(formData.size?.rightFeet, formData.size?.rightInches);
+      } else {
+        fw = parseFloat(formData.size?.front) || 0;
+        bw = parseFloat(formData.size?.back) || 0;
+        ld = parseFloat(formData.size?.left) || 0;
+        rd = parseFloat(formData.size?.right) || 0;
+      }
     }
 
     if (fw <= 0 || bw <= 0 || ld <= 0 || rd <= 0) {
-      setModelPoints(null);
-      setBounding(null);
       return;
     }
 
     const diff = bw - fw;
     let a, h;
+    
     if (Math.abs(diff) < 0.01) {
-      if (Math.abs(ld - rd) > 0.01) {
-        setModelPoints(null);
-        setBounding(null);
-        return;
-      }
       a = 0;
-      h = ld;
+      h = (ld + rd) / 2;
     } else {
-      a = (rd ** 2 - ld ** 2 - diff ** 2) / (2 * diff);
-      const h2 = ld ** 2 - a ** 2;
-      if (h2 <= 0) {
-        setModelPoints(null);
-        setBounding(null);
-        return;
+      const avgHeight = (ld + rd) / 2;
+      const minPossibleDiff = Math.abs(ld - rd);
+      const maxPossibleDiff = ld + rd;
+      
+      if (Math.abs(diff) < minPossibleDiff || Math.abs(diff) > maxPossibleDiff) {
+        h = avgHeight * 0.8;
+        a = diff / 2;
+      } else {
+        a = (rd * rd - ld * ld - diff * diff) / (2 * diff);
+        const h2 = ld * ld - a * a;
+        
+        if (h2 > 0) {
+          h = Math.sqrt(h2);
+        } else {
+          h = avgHeight * 0.8;
+          a = diff / 2;
+        }
       }
-      h = Math.sqrt(h2);
     }
+
+    h = Math.max(h, 1);
 
     const points = {
       tl: { x: a, y: 0 },
@@ -156,21 +186,21 @@ export default function Step7MarkSetbacks({
     const maxX = Math.max(points.tl.x, points.tr.x, points.bl.x, points.br.x);
     const maxY = Math.max(points.tl.y, points.tr.y, points.bl.y, points.br.y);
 
-    setBounding({ minX, minY, maxX, maxY });
+    const newBounding = { minX, minY, maxX, maxY };
+    
+    setBounding(newBounding);
     setModelPoints(points);
-  }, [formData.shape, formData.size]);
 
-  useEffect(() => {
-    if (!bounding) return;
-
-    const totalW = bounding.maxX - bounding.minX;
-    const totalH = bounding.maxY - bounding.minY;
+    const totalW = newBounding.maxX - newBounding.minX;
+    const totalH = newBounding.maxY - newBounding.minY;
     const setback = 2.5;
-    const centerX = (bounding.minX + bounding.maxX) / 2;
-    const centerY = (bounding.minY + bounding.maxY) / 2;
-    const availableW = totalW - setback * 2;
-    const availableH = totalH - setback * 2;
-    const size = Math.min(availableW, availableH) * 0.8;
+    const centerX = (newBounding.minX + newBounding.maxX) / 2;
+    const centerY = (newBounding.minY + newBounding.maxY) / 2;
+    
+    const availableW = Math.max(1, totalW - setback * 2);
+    const availableH = Math.max(1, totalH - setback * 2);
+    
+    const size = Math.min(availableW, availableH) * 0.6;
     const half = size / 2;
 
     const initialSquare = [
@@ -180,22 +210,27 @@ export default function Step7MarkSetbacks({
       { x: centerX - half, y: centerY + half },
     ];
 
-    if (initialSquare.every((p) => isPointValid(p))) {
+    const allPointsValid = initialSquare.every((p) => 
+      pointInPolygon(p, [points.tl, points.tr, points.br, points.bl])
+    );
+
+    if (allPointsValid) {
       setBuildingPoints(initialSquare);
-      setGapInputs(Array(8).fill(""));
     } else {
-      const fallbackSize = Math.min(availableW, availableH) * 0.75;
-      const fallbackHalf = fallbackSize / 2;
-      const fallbackSquare = [
-        { x: centerX - fallbackHalf, y: centerY - fallbackHalf },
-        { x: centerX + fallbackHalf, y: centerY - fallbackHalf },
-        { x: centerX + fallbackHalf, y: centerY + fallbackHalf },
-        { x: centerX - fallbackHalf, y: centerY + fallbackHalf },
+      const tinySize = Math.min(availableW, availableH) * 0.4;
+      const tinyHalf = tinySize / 2;
+      const tinySquare = [
+        { x: centerX - tinyHalf, y: centerY - tinyHalf },
+        { x: centerX + tinyHalf, y: centerY - tinyHalf },
+        { x: centerX + tinyHalf, y: centerY + tinyHalf },
+        { x: centerX - tinyHalf, y: centerY + tinyHalf },
       ];
-      setBuildingPoints(fallbackSquare);
-      setGapInputs(Array(8).fill(""));
+      
+      setBuildingPoints(tinySquare);
     }
-  }, [bounding, isPointValid]);
+    
+    setGapInputs(Array(8).fill(""));
+  }, [formData.shape, formData.size, pointInPolygon]);
 
   const getModelFromMouse = useCallback((e) => {
     const rect = svgRef.current.getBoundingClientRect();
@@ -224,6 +259,8 @@ export default function Step7MarkSetbacks({
   };
 
   const adjustEdge = (edgeIndex, direction) => {
+    if (buildingPoints.length === 0) return;
+    
     const step = 0.1 * direction;
     const p1Index = edgeIndex;
     const p2Index = (edgeIndex + 1) % 4;
@@ -246,15 +283,20 @@ export default function Step7MarkSetbacks({
       y: buildingPoints[p2Index].y + deltaY,
     };
 
-    const newPoints = [...buildingPoints];
-    newPoints[p1Index] = newP1;
-    newPoints[p2Index] = newP2;
-    setBuildingPoints(newPoints);
-    setGapInputs(Array(8).fill(""));
+    // FIXED: Validate both points before updating
+    if (isPointValid(newP1) && isPointValid(newP2)) {
+      const newPoints = [...buildingPoints];
+      newPoints[p1Index] = newP1;
+      newPoints[p2Index] = newP2;
+      setBuildingPoints(newPoints);
+      setGapInputs(Array(8).fill(""));
+    }
   };
 
   const handlePointStart = useCallback(
     (pointIndex, e, isTouch = false) => {
+      if (buildingPoints.length === 0) return;
+      
       if (isTouch) e.preventDefault();
       e.stopPropagation();
 
@@ -274,6 +316,8 @@ export default function Step7MarkSetbacks({
 
   const handleEdgeStart = useCallback(
     (edgeIndex, e, isTouch = false) => {
+      if (buildingPoints.length === 0) return;
+      
       if (isTouch) e.preventDefault();
       e.stopPropagation();
 
@@ -300,7 +344,7 @@ export default function Step7MarkSetbacks({
 
   const handleMove = useCallback(
     (e, isTouch = false) => {
-      if (!dragging || dragPointIndex === -1 || !bounding) return;
+      if (!dragging || dragPointIndex === -1 || !bounding || buildingPoints.length === 0) return;
       if (isTouch) e.preventDefault();
 
       const p = isTouch ? getModelFromTouch(e) : getModelFromMouse(e);
@@ -353,11 +397,14 @@ export default function Step7MarkSetbacks({
           y: buildingPoints[p2Index].y + deltaY,
         };
 
-        const newPoints = [...buildingPoints];
-        newPoints[p1Index] = newP1;
-        newPoints[p2Index] = newP2;
-        setBuildingPoints(newPoints);
-        setGapInputs(Array(8).fill(""));
+        // FIXED: Validate both points before updating
+        if (isPointValid(newP1) && isPointValid(newP2)) {
+          const newPoints = [...buildingPoints];
+          newPoints[p1Index] = newP1;
+          newPoints[p2Index] = newP2;
+          setBuildingPoints(newPoints);
+          setGapInputs(Array(8).fill(""));
+        }
       }
     },
     [
@@ -517,27 +564,26 @@ export default function Step7MarkSetbacks({
     if (buildingPoints.length !== 4)
       return { diagonal1: 0, diagonal2: 0 };
 
-    const diagonal1 =
-      Math.round(
-        Math.hypot(
-          buildingPoints[2].x - buildingPoints[0].x,
-          buildingPoints[2].y - buildingPoints[0].y
-        ) * 10
-      ) / 10;
+    const diagonal1 = Math.hypot(
+      buildingPoints[2].x - buildingPoints[0].x,
+      buildingPoints[2].y - buildingPoints[0].y
+    );
 
-    const diagonal2 =
-      Math.round(
-        Math.hypot(
-          buildingPoints[3].x - buildingPoints[1].x,
-          buildingPoints[3].y - buildingPoints[1].y
-        ) * 10
-      ) / 10;
+    const diagonal2 = Math.hypot(
+      buildingPoints[3].x - buildingPoints[1].x,
+      buildingPoints[3].y - buildingPoints[1].y
+    );
 
-    return { diagonal1, diagonal2 };
+    return {
+      diagonal1: Math.round(diagonal1 * 10) / 10,
+      diagonal2: Math.round(diagonal2 * 10) / 10,
+    };
   }, [buildingPoints]);
 
   const currentGaps = calculateGaps();
   const diagonals = calculateDiagonals();
+  const diagonal1FeetInches = convertToFeetInches(diagonals.diagonal1);
+  const diagonal2FeetInches = convertToFeetInches(diagonals.diagonal2);
 
   const renderDiagram = () => {
     if (!modelPoints || !bounding || buildingPoints.length === 0) {
@@ -553,11 +599,10 @@ export default function Step7MarkSetbacks({
     const boundingW = bounding.maxX - bounding.minX;
     const boundingH = bounding.maxY - bounding.minY;
 
-    // ZOOM FIX: Reduced padding + minimum scale
-    const padding = 20; // Was 80 - diagram will use more space
+    const padding = 20;
     const scaleW = (viewW - padding) / boundingW;
     const scaleH = (viewH - padding) / boundingH;
-    const finalScale = Math.max(1.6, Math.min(scaleW, scaleH)); // Minimum 1.6x zoom
+    const finalScale = Math.max(1.6, Math.min(scaleW, scaleH));
 
     const shiftX =
       (viewW - boundingW * finalScale) / 2 - bounding.minX * finalScale;
@@ -634,7 +679,7 @@ export default function Step7MarkSetbacks({
 
         <text
           x={viewW / 2}
-          y={20}
+          y={15}
           textAnchor="middle"
           fontSize="12"
           fontWeight="600"
@@ -667,7 +712,7 @@ export default function Step7MarkSetbacks({
             rotation = 90;
           }
 
-          const textContent = `${distance} ft`;
+          const textContent = formatDistance(distance);
 
           return (
             <g key={`plot-edge-${index}`}>
@@ -718,6 +763,8 @@ export default function Step7MarkSetbacks({
           const p2 = toScreen(gap.closestPoint);
           const midX = (p1.x + p2.x) / 2;
           const midY = (p1.y + p2.y) / 2;
+          const gapDistance = Math.max(0, Math.round(gap.gap * 10) / 10);
+          const gapText = formatDistance(gapDistance);
           return (
             <g key={`gap-line-${index}`}>
               <line
@@ -742,7 +789,7 @@ export default function Step7MarkSetbacks({
                 fontWeight="bold"
                 style={{ userSelect: "none" }}
               >
-                {gap.gap} ft
+                {gapText}
               </text>
             </g>
           );
@@ -783,7 +830,7 @@ export default function Step7MarkSetbacks({
               pointerEvents="none"
               style={{ userSelect: "none" }}
             >
-              {diagonals.diagonal1} ft
+              {formatDistance(diagonals.diagonal1)}
             </text>
             <text
               x={(screenBuildingPoints[0].x + screenBuildingPoints[2].x) / 2}
@@ -795,7 +842,7 @@ export default function Step7MarkSetbacks({
               pointerEvents="none"
               style={{ userSelect: "none" }}
             >
-              {diagonals.diagonal1} ft
+              {formatDistance(diagonals.diagonal1)}
             </text>
 
             <text
@@ -810,7 +857,7 @@ export default function Step7MarkSetbacks({
               pointerEvents="none"
               style={{ userSelect: "none" }}
             >
-              {diagonals.diagonal2} ft
+              {formatDistance(diagonals.diagonal2)}
             </text>
             <text
               x={(screenBuildingPoints[1].x + screenBuildingPoints[3].x) / 2}
@@ -822,7 +869,7 @@ export default function Step7MarkSetbacks({
               pointerEvents="none"
               style={{ userSelect: "none" }}
             >
-              {diagonals.diagonal2} ft
+              {formatDistance(diagonals.diagonal2)}
             </text>
           </>
         )}
@@ -1005,9 +1052,9 @@ export default function Step7MarkSetbacks({
     const setback = 2.5;
     const centerX = (bounding.minX + bounding.maxX) / 2;
     const centerY = (bounding.minY + bounding.maxY) / 2;
-    const availableW = totalW - setback * 2;
-    const availableH = totalH - setback * 2;
-    const size = Math.min(availableW, availableH) * 0.8;
+    const availableW = Math.max(1, totalW - setback * 2);
+    const availableH = Math.max(1, totalH - setback * 2);
+    const size = Math.min(availableW, availableH) * 0.6;
     const half = size / 2;
 
     const square = [
@@ -1021,7 +1068,7 @@ export default function Step7MarkSetbacks({
       setBuildingPoints(square);
       setGapInputs(Array(8).fill(""));
     } else {
-      const fallbackSize = Math.min(availableW, availableH) * 0.75;
+      const fallbackSize = Math.min(availableW, availableH) * 0.4;
       const fallbackHalf = fallbackSize / 2;
       const fallbackSquare = [
         { x: centerX - fallbackHalf, y: centerY - fallbackHalf },
@@ -1054,20 +1101,10 @@ export default function Step7MarkSetbacks({
         overflowX="hidden"
         pr={2}
         css={{
-          "&::-webkit-scrollbar": {
-            width: "6px",
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "#f1f1f1",
-            borderRadius: "10px",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: "#cbd5e0",
-            borderRadius: "10px",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            background: "#a0aec0",
-          },
+          "&::-webkit-scrollbar": { width: "6px" },
+          "&::-webkit-scrollbar-track": { background: "#f1f1f1", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb": { background: "#cbd5e0", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb:hover": { background: "#a0aec0" },
         }}
       >
         <VStack spacing={4} align="stretch">
@@ -1151,32 +1188,59 @@ export default function Step7MarkSetbacks({
             <Text fontSize="13px" color="black" mb={3} fontWeight="700">
               Setback Gaps at Key Positions:
             </Text>
-            <SimpleGrid columns={2} spacing={3}>
-              {currentGaps.map((g) => (
-                <FormControl key={g.label} isDisabled size="sm">
-                  <FormLabel
-                    fontSize="11px"
-                    fontWeight="600"
-                    mb={1}
-                    color="black"
-                  >
-                    {g.label}
-                  </FormLabel>
-                  <Input
-                    type="number"
-                    size="sm"
-                    value={g.gap}
-                    isReadOnly
-                    min="0"
-                    step="0.1"
-                    bg="gray.100"
-                    borderColor="gray.300"
-                    fontWeight="bold"
-                    fontSize="12px"
-                    color="black"
-                  />
-                </FormControl>
-              ))}
+            <SimpleGrid columns={1} spacing={3}>
+              {currentGaps.map((g) => {
+                const { feet, inches } = convertToFeetInches(g.gap);
+                return (
+                  <FormControl key={g.label} size="sm">
+                    <FormLabel
+                      fontSize="11px"
+                      fontWeight="600"
+                      mb={2}
+                      color="black"
+                    >
+                      {g.label}
+                    </FormLabel>
+                    <HStack spacing={2}>
+                      <Input
+                        type="number"
+                        size="sm"
+                        value={feet}
+                        isReadOnly
+                        min="0"
+                        bg="gray.100"
+                        borderColor="gray.300"
+                        fontWeight="bold"
+                        fontSize="12px"
+                        color="black"
+                        width="70px"
+                        textAlign="center"
+                      />
+                      <Text fontSize="11px" color="gray.600" fontWeight="500">
+                        feet
+                      </Text>
+                      <Input
+                        type="number"
+                        size="sm"
+                        value={inches}
+                        isReadOnly
+                        min="0"
+                        max="11"
+                        bg="gray.100"
+                        borderColor="gray.300"
+                        fontWeight="bold"
+                        fontSize="12px"
+                        color="black"
+                        width="60px"
+                        textAlign="center"
+                      />
+                      <Text fontSize="11px" color="gray.600" fontWeight="500">
+                        inches
+                      </Text>
+                    </HStack>
+                  </FormControl>
+                );
+              })}
             </SimpleGrid>
 
             <Divider my={4} borderColor="gray.300" />
@@ -1184,51 +1248,101 @@ export default function Step7MarkSetbacks({
             <Text fontSize="13px" color="black" mb={3} fontWeight="700">
               Diagonal Measurements:
             </Text>
-            <SimpleGrid columns={2} spacing={3}>
-              <FormControl isDisabled size="sm">
+            <VStack spacing={3} align="stretch">
+              <FormControl size="sm">
                 <FormLabel
                   fontSize="11px"
                   fontWeight="600"
-                  mb={1}
+                  mb={2}
                   color="black"
                 >
                   Diagonal 1 (Corner 1→3)
                 </FormLabel>
-                <Input
-                  type="number"
-                  size="sm"
-                  value={diagonals.diagonal1}
-                  isReadOnly
-                  bg="indigo.50"
-                  borderColor="indigo.300"
-                  fontWeight="bold"
-                  fontSize="12px"
-                  color="black"
-                />
+                <HStack spacing={2}>
+                  <Input
+                    type="number"
+                    size="sm"
+                    value={diagonal1FeetInches.feet}
+                    isReadOnly
+                    bg="indigo.50"
+                    borderColor="indigo.300"
+                    fontWeight="bold"
+                    fontSize="12px"
+                    color="black"
+                    width="70px"
+                    textAlign="center"
+                  />
+                  <Text fontSize="11px" color="gray.600" fontWeight="500">
+                    feet
+                  </Text>
+                  <Input
+                    type="number"
+                    size="sm"
+                    value={diagonal1FeetInches.inches}
+                    isReadOnly
+                    min="0"
+                    max="11"
+                    bg="indigo.50"
+                    borderColor="indigo.300"
+                    fontWeight="bold"
+                    fontSize="12px"
+                    color="black"
+                    width="60px"
+                    textAlign="center"
+                  />
+                  <Text fontSize="11px" color="gray.600" fontWeight="500">
+                    inches
+                  </Text>
+                </HStack>
               </FormControl>
 
-              <FormControl isDisabled size="sm">
+              <FormControl size="sm">
                 <FormLabel
                   fontSize="11px"
                   fontWeight="600"
-                  mb={1}
+                  mb={2}
                   color="black"
                 >
                   Diagonal 2 (Corner 2→4)
                 </FormLabel>
-                <Input
-                  type="number"
-                  size="sm"
-                  value={diagonals.diagonal2}
-                  isReadOnly
-                  bg="indigo.50"
-                  borderColor="indigo.300"
-                  fontWeight="bold"
-                  fontSize="12px"
-                  color="black"
-                />
+                <HStack spacing={2}>
+                  <Input
+                    type="number"
+                    size="sm"
+                    value={diagonal2FeetInches.feet}
+                    isReadOnly
+                    bg="indigo.50"
+                    borderColor="indigo.300"
+                    fontWeight="bold"
+                    fontSize="12px"
+                    color="black"
+                    width="70px"
+                    textAlign="center"
+                  />
+                  <Text fontSize="11px" color="gray.600" fontWeight="500">
+                    feet
+                  </Text>
+                  <Input
+                    type="number"
+                    size="sm"
+                    value={diagonal2FeetInches.inches}
+                    isReadOnly
+                    min="0"
+                    max="11"
+                    bg="indigo.50"
+                    borderColor="indigo.300"
+                    fontWeight="bold"
+                    fontSize="12px"
+                    color="black"
+                    width="60px"
+                    textAlign="center"
+                  />
+                  <Text fontSize="11px" color="gray.600" fontWeight="500">
+                    inches
+                  </Text>
+                </HStack>
               </FormControl>
-            </SimpleGrid>
+            </VStack>
           </Box>
         </VStack>
       </Box>

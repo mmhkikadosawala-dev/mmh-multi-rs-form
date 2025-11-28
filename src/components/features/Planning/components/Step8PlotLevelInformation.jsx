@@ -3,15 +3,14 @@ import {
   Box,
   Flex,
   Text,
-  Radio,
-  RadioGroup,
   Button,
   VStack,
   Input,
-  Select,
   Image,
 } from "@chakra-ui/react";
-import PlotLevelImage from "../../../../assets/Planning/PlotLevelImage/Rectangle 389.png";
+import PlinthLevelImg from "../../../../assets/Planning/PlotLevelImage/PlinthLevelImg.png";
+import PlotLevelDownImg from "../../../../assets/Planning/PlotLevelImage/PlotLevelDownImg.png";
+import SameLevelImg from "../../../../assets/Planning/PlotLevelImage/SameLevelImg.png";
 
 export default function Step3ProjectLevel({
   formData,
@@ -21,40 +20,64 @@ export default function Step3ProjectLevel({
   onBack,
   isLastStep,
 }) {
-  const levelRelation = formData.levelRelation ?? "below";
-  const levelDelta = formData.levelDelta ?? 30;
-  const levelUnit = formData.levelUnit ?? "feet";
+  const levelRelation = formData.levelRelation ?? "same";
+  const levelFeet = formData.levelFeet ?? "";
+  const levelInches = formData.levelInches ?? "";
 
   const updateLevelRelation = (value) => {
     const next = { ...formData, levelRelation: value };
-    if (value === "same") next.levelDelta = 0;
+    if (value === "same") {
+      next.levelFeet = "";
+      next.levelInches = "";
+    }
     setFormData(next);
   };
 
-  const updateLevelDelta = (e) => {
-    const v = parseFloat(e.target.value);
+  const updateLevelFeet = (e) => {
     setFormData({
       ...formData,
-      levelDelta: Number.isNaN(v) ? "" : Math.max(0, v),
+      levelFeet: e.target.value,
     });
   };
 
-  const updateLevelUnit = (e) => {
-    setFormData({
-      ...formData,
-      levelUnit: e.target.value,
-    });
+  const updateLevelInches = (e) => {
+    const value = e.target.value;
+    // Only allow values between 0 and 11
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({
+        ...formData,
+        levelInches: value,
+      });
+    }
   };
 
   const isDeltaEnabled = levelRelation === "above" || levelRelation === "below";
   const deltaLabel =
     levelRelation === "above"
-      ? "How plot Level above Road"
+      ? "How much is plot level above road?"
       : levelRelation === "below"
-      ? "How plot Level below Road"
-      : "How plot Level";
+      ? "How much is plot level below road?"
+      : "Plot level same as road";
 
   const handleAction = isLastStep ? onSubmit : onNext;
+
+  const levelOptions = [
+    {
+      value: "same",
+      label: "Same as Road",
+      image: SameLevelImg,
+    },
+    {
+      value: "above",
+      label: "Above Road",
+      image: PlotLevelDownImg, // SWAPPED: Now using PlotLevelDownImg
+    },
+    {
+      value: "below",
+      label: "Below Road",
+      image: PlinthLevelImg, // SWAPPED: Now using PlinthLevelImg
+    },
+  ];
 
   return (
     <Box
@@ -69,94 +92,172 @@ export default function Step3ProjectLevel({
       py={6}
     >
       {/* Scrollable Content Area */}
-      <Box 
-        flex="1" 
+      <Box
+        flex="1"
         overflowY="auto"
         overflowX="hidden"
         pr={2}
         css={{
-          '&::-webkit-scrollbar': {
-            width: '6px',
+          "&::-webkit-scrollbar": {
+            width: "6px",
           },
-          '&::-webkit-scrollbar-track': {
-            background: '#f1f1f1',
-            borderRadius: '10px',
+          "&::-webkit-scrollbar-track": {
+            background: "#f1f1f1",
+            borderRadius: "10px",
           },
-          '&::-webkit-scrollbar-thumb': {
-            background: '#cbd5e0',
-            borderRadius: '10px',
+          "&::-webkit-scrollbar-thumb": {
+            background: "#cbd5e0",
+            borderRadius: "10px",
           },
-          '&::-webkit-scrollbar-thumb:hover': {
-            background: '#a0aec0',
+          "&::-webkit-scrollbar-thumb:hover": {
+            background: "#a0aec0",
           },
         }}
       >
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={5} align="stretch">
           {/* Heading */}
-          <Text fontSize="md" fontWeight="600" color="gray.700">
+          <Text fontSize="16px" fontWeight="600" color="gray.700">
             Plot Level Information
           </Text>
 
-          {/* Image */}
-          <Image
-            src={PlotLevelImage}
-            alt="Plot Level Illustration"
-            width="100%"
-            height="auto"
-            objectFit="cover"
-            borderRadius="md"
-          />
-
-          {/* Level Difference from Road */}
+          {/* Level Options with Images */}
           <Box>
-            <Text fontSize="sm" color="gray.700" fontWeight="600" mb={2}>
-              Level Difference from Road:
+            <Text fontSize="14px" color="gray.700" fontWeight="600" mb={3}>
+              Level Difference from Road <Text as="span" color="red.500">*</Text>
             </Text>
 
-            <RadioGroup onChange={updateLevelRelation} value={levelRelation}>
-              <VStack spacing={3} align="stretch">
-                <Radio value="same" colorScheme="cyan" size="sm">
-                  <Text fontSize="sm" color="gray.700">Same as road</Text>
-                </Radio>
-                <Radio value="above" colorScheme="cyan" size="sm">
-                  <Text fontSize="sm" color="gray.700">Above road by</Text>
-                </Radio>
-                <Radio value="below" colorScheme="cyan" size="sm">
-                  <Text fontSize="sm" color="gray.700">Below road by</Text>
-                </Radio>
-              </VStack>
-            </RadioGroup>
+            <VStack spacing={3} align="stretch">
+              {levelOptions.map((option) => (
+                <Box
+                  key={option.value}
+                  onClick={() => updateLevelRelation(option.value)}
+                  cursor="pointer"
+                  border="2px solid"
+                  borderColor={
+                    levelRelation === option.value ? "cyan.500" : "gray.200"
+                  }
+                  borderRadius="12px"
+                  overflow="hidden"
+                  bg={levelRelation === option.value ? "cyan.50" : "white"}
+                  transition="all 0.2s ease"
+                  _hover={{
+                    borderColor:
+                      levelRelation === option.value ? "cyan.600" : "gray.300",
+                    transform: "translateY(-2px)",
+                    boxShadow: "md",
+                  }}
+                >
+                  <Image
+                    src={option.image}
+                    alt={option.label}
+                    width="100%"
+                    height="140px"
+                    objectFit="cover"
+                  />
+                  <Flex
+                    align="center"
+                    justify="center"
+                    p={3}
+                    bg={levelRelation === option.value ? "cyan.50" : "white"}
+                  >
+                    <Box
+                      w="18px"
+                      h="18px"
+                      borderRadius="full"
+                      border="2px solid"
+                      borderColor={
+                        levelRelation === option.value ? "cyan.500" : "gray.300"
+                      }
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      mr={2}
+                    >
+                      {levelRelation === option.value && (
+                        <Box
+                          w="10px"
+                          h="10px"
+                          borderRadius="full"
+                          bg="cyan.500"
+                        />
+                      )}
+                    </Box>
+                    <Text
+                      fontSize="14px"
+                      fontWeight="600"
+                      color={
+                        levelRelation === option.value ? "cyan.700" : "gray.700"
+                      }
+                    >
+                      {option.label}
+                    </Text>
+                  </Flex>
+                </Box>
+              ))}
+            </VStack>
           </Box>
 
-          {/* Delta input row */}
-          <Box>
-            <Text fontSize="sm" color="gray.700" mb={2}>
-              {deltaLabel}
-            </Text>
-            <Flex gap={2} align="center">
-              <Input
-                value={isDeltaEnabled ? levelDelta : 0}
-                onChange={updateLevelDelta}
-                isDisabled={!isDeltaEnabled}
-                type="number"
-                min="0"
-                step="1"
-                size="sm"
-                borderRadius="md"
-                fontSize="sm"
-                placeholder="0"
-              />
-              <Select
-                value={levelUnit}
-                onChange={updateLevelUnit}
-                size="sm"
-                width="90px"
-              >
-                <option value="feet">feet</option>
-                <option value="meters">inches</option>
-              </Select>
-            </Flex>
-          </Box>
+          {/* Delta input row - Feet and Inches */}
+          {isDeltaEnabled && (
+            <Box>
+              <Text fontSize="14px" color="gray.700" fontWeight="600" mb={2}>
+                {deltaLabel}
+              </Text>
+              <Flex gap={2} align="center">
+                <Input
+                  value={levelFeet}
+                  onChange={updateLevelFeet}
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  size="md"
+                  h="40px"
+                  borderRadius="8px"
+                  fontSize="14px"
+                  textAlign="center"
+                  fontWeight="500"
+                  borderColor="gray.300"
+                  flex="1"
+                  _hover={{
+                    borderColor: "cyan.400",
+                  }}
+                  _focus={{
+                    borderColor: "cyan.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                  }}
+                />
+                <Text fontSize="13px" color="gray.600" fontWeight="500" minW="35px">
+                  feet
+                </Text>
+                <Input
+                  value={levelInches}
+                  onChange={updateLevelInches}
+                  type="number"
+                  min="0"
+                  max="11"
+                  placeholder="0"
+                  size="md"
+                  h="40px"
+                  borderRadius="8px"
+                  fontSize="14px"
+                  textAlign="center"
+                  fontWeight="500"
+                  borderColor="gray.300"
+                  flex="1"
+                  _hover={{
+                    borderColor: "cyan.400",
+                  }}
+                  _focus={{
+                    borderColor: "cyan.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                  }}
+                />
+                <Text fontSize="13px" color="gray.600" fontWeight="500" minW="45px">
+                  inches
+                </Text>
+              </Flex>
+            </Box>
+          )}
         </VStack>
       </Box>
 
@@ -181,7 +282,7 @@ export default function Step3ProjectLevel({
         >
           ← Previous
         </Button>
-        
+
         <Button
           onClick={handleAction}
           variant="solid"

@@ -15,6 +15,7 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  HStack,
 } from "@chakra-ui/react";
 import { FiPlay } from "react-icons/fi";
 import { useState } from "react";
@@ -32,10 +33,14 @@ export default function StepWallDimensions({
   isLastStep,
   onSubmit,
 }) {
-  const plinthLevel = formData?.plinthLevel ?? "";
-  const lintelLevel = formData?.lintelLevel ?? "";
-  const sillLevel = formData?.sillLevel ?? "";
-  const slabHeight = formData?.slabHeight ?? "";
+  const plinthLevelFeet = formData?.plinthLevelFeet ?? "";
+  const plinthLevelInches = formData?.plinthLevelInches ?? "";
+  const lintelLevelFeet = formData?.lintelLevelFeet ?? "";
+  const lintelLevelInches = formData?.lintelLevelInches ?? "";
+  const sillLevelFeet = formData?.sillLevelFeet ?? "";
+  const sillLevelInches = formData?.sillLevelInches ?? "";
+  const slabHeightFeet = formData?.slabHeightFeet ?? "";
+  const slabHeightInches = formData?.slabHeightInches ?? "";
 
   const { isOpen: isVideoOpen, onOpen: onVideoOpen, onClose: onVideoClose } = useDisclosure();
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure();
@@ -43,6 +48,12 @@ export default function StepWallDimensions({
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const handleInchesChange = (field, value) => {
+    if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
+      setFormData({ ...formData, [field]: value });
+    }
   };
 
   const handleNext = () => {
@@ -55,34 +66,68 @@ export default function StepWallDimensions({
     onVideoOpen();
   };
 
+  const setSuggestedValue = (field) => {
+    const suggestions = {
+      plinthLevel: { feet: "2", inches: "0" },
+      lintelLevel: { feet: "7", inches: "0" },
+      sillLevel: { feet: "3", inches: "0" },
+      slabHeight: { feet: "11", inches: "0" },
+    };
+
+    const suggestion = suggestions[field];
+    if (suggestion) {
+      setFormData({
+        ...formData,
+        [`${field}Feet`]: suggestion.feet,
+        [`${field}Inches`]: suggestion.inches,
+      });
+    }
+  };
+
   const specBlocks = [
     {
       label: "Plinth Level",
-      value: plinthLevel,
+      valueFeet: plinthLevelFeet,
+      valueInches: plinthLevelInches,
+      fieldFeet: "plinthLevelFeet",
+      fieldInches: "plinthLevelInches",
       field: "plinthLevel",
       videoUrl: PlinthlevelVideo,
       isPortrait: true,
+      suggestion: "2' 0\"",
     },
     {
       label: "Lintel Level",
-      value: lintelLevel,
+      valueFeet: lintelLevelFeet,
+      valueInches: lintelLevelInches,
+      fieldFeet: "lintelLevelFeet",
+      fieldInches: "lintelLevelInches",
       field: "lintelLevel",
       videoUrl: LinthandStillVideo,
       isPortrait: true,
+      suggestion: "7' 0\"",
     },
     {
       label: "Sill Level",
-      value: sillLevel,
+      valueFeet: sillLevelFeet,
+      valueInches: sillLevelInches,
+      fieldFeet: "sillLevelFeet",
+      fieldInches: "sillLevelInches",
       field: "sillLevel",
-      videoUrl: LinthandStillVideo, // Same video as Lintel
+      videoUrl: LinthandStillVideo,
       isPortrait: true,
+      suggestion: "3' 0\"",
     },
     {
       label: "Slab Height",
-      value: slabHeight,
+      valueFeet: slabHeightFeet,
+      valueInches: slabHeightInches,
+      fieldFeet: "slabHeightFeet",
+      fieldInches: "slabHeightInches",
       field: "slabHeight",
       videoUrl: FloorHeightVideo,
       isPortrait: true,
+      suggestion: "11' 0\"",
     },
   ];
 
@@ -98,7 +143,6 @@ export default function StepWallDimensions({
       px={4}
       py={6}
     >
-      {/* Scrollable Content Area */}
       <Box
         flex="1"
         overflowY="auto"
@@ -122,7 +166,6 @@ export default function StepWallDimensions({
         }}
       >
         <VStack spacing={4} align="stretch">
-          {/* Heading */}
           <Text
             fontWeight="600"
             color="gray.700"
@@ -133,7 +176,6 @@ export default function StepWallDimensions({
             Wall Dimensions
           </Text>
 
-          {/* Single Top Image - Clickable */}
           <Box
             bg="gray.50"
             borderRadius="12px"
@@ -171,7 +213,6 @@ export default function StepWallDimensions({
                 maxWidth="100%"
                 objectFit="contain"
               />
-              {/* Click to expand hint */}
               <Box
                 position="absolute"
                 bottom="2"
@@ -189,8 +230,7 @@ export default function StepWallDimensions({
             </Box>
           </Box>
 
-          {/* Input Sections with Play Buttons */}
-          {specBlocks.map((spec, idx) => (
+          {specBlocks.map((spec) => (
             <Box
               key={spec.field}
               bg="white"
@@ -199,56 +239,108 @@ export default function StepWallDimensions({
               borderColor="gray.200"
               p={3}
             >
-              <Text fontWeight="600" fontSize="14px" mb={2} color="gray.700">
+              <Text fontWeight="600" fontSize="14px" color="gray.700" mb={2}>
                 {spec.label}
               </Text>
-              <Flex align="center" gap={2}>
-                <Input
-                  value={spec.value}
-                  onChange={(e) => handleChange(spec.field, e.target.value)}
-                  placeholder="0"
-                  h="40px"
-                  w="80px"
-                  type="number"
-                  min="0"
-                  borderRadius="8px"
-                  fontSize="14px"
-                  fontWeight="500"
-                  borderColor="gray.300"
-                  textAlign="center"
-                  _hover={{
-                    borderColor: "cyan.400",
-                  }}
-                  _focus={{
-                    borderColor: "cyan.500",
-                    boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
-                  }}
-                />
-                <Text color="gray.600" fontSize="14px" fontWeight="500">
-                  feet
-                </Text>
 
-                {/* Play Button */}
+              <Flex align="center" gap={2} mb={2}>
+                <HStack spacing={2} flex="1">
+                  <Input
+                    value={spec.valueFeet}
+                    onChange={(e) => handleChange(spec.fieldFeet, e.target.value)}
+                    placeholder="0"
+                    h="40px"
+                    type="number"
+                    min="0"
+                    borderRadius="8px"
+                    fontSize="14px"
+                    fontWeight="500"
+                    borderColor="gray.300"
+                    textAlign="center"
+                    flex="1"
+                    _hover={{
+                      borderColor: "cyan.400",
+                    }}
+                    _focus={{
+                      borderColor: "cyan.500",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                    }}
+                  />
+                  <Text color="gray.600" fontSize="13px" fontWeight="500" minW="30px">
+                    feet
+                  </Text>
+                  <Input
+                    value={spec.valueInches}
+                    onChange={(e) => handleInchesChange(spec.fieldInches, e.target.value)}
+                    placeholder=""
+                    h="40px"
+                    type="number"
+                    min="0"
+                    max="11"
+                    borderRadius="8px"
+                    fontSize="14px"
+                    fontWeight="500"
+                    borderColor="gray.300"
+                    textAlign="center"
+                    flex="1"
+                    _hover={{
+                      borderColor: "cyan.400",
+                    }}
+                    _focus={{
+                      borderColor: "cyan.500",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-cyan-500)",
+                    }}
+                  />
+                  <Text color="gray.600" fontSize="13px" fontWeight="500" minW="40px">
+                    inches
+                  </Text>
+                </HStack>
+
                 <IconButton
                   aria-label={`Play ${spec.label} video`}
                   icon={<FiPlay />}
                   colorScheme="cyan"
                   size="md"
                   borderRadius="full"
-                  ml="auto"
                   onClick={() => openVideoModal(spec)}
                   _hover={{
                     transform: "scale(1.1)",
                   }}
                   transition="all 0.2s ease"
+                  flexShrink={0}
                 />
               </Flex>
+
+              {/* Recommended Value Button */}
+              <Button
+                size="sm"
+                width="100%"
+                variant="outline"
+                colorScheme="blue"
+                onClick={() => setSuggestedValue(spec.field)}
+                fontSize="12px"
+                fontWeight="600"
+                h="32px"
+                borderRadius="8px"
+                borderWidth="2px"
+                _hover={{
+                  bg: "blue.50",
+                  borderColor: "blue.500",
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 2px 8px rgba(66, 153, 225, 0.3)",
+                }}
+                _active={{
+                  bg: "blue.100",
+                }}
+                transition="all 0.2s ease"
+              >
+                💡 Recommended: {spec.suggestion} (Click to fill)
+              </Button>
             </Box>
           ))}
         </VStack>
       </Box>
 
-      {/* Image Zoom Modal - Mobile Friendly */}
       <Modal 
         isOpen={isImageOpen} 
         onClose={onImageClose} 
@@ -292,7 +384,6 @@ export default function StepWallDimensions({
         </ModalContent>
       </Modal>
 
-      {/* Video Modal - Portrait Support */}
       <Modal 
         isOpen={isVideoOpen} 
         onClose={onVideoClose} 
@@ -338,7 +429,6 @@ export default function StepWallDimensions({
         </ModalContent>
       </Modal>
 
-      {/* Fixed Navigation Buttons */}
       <Flex justify="space-between" gap={3} mt={4} flexShrink={0}>
         <Button
           onClick={onBack}

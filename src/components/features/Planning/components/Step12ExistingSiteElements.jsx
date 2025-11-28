@@ -83,12 +83,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("borewell", "yes")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="yes" colorScheme="cyan" size="md">
+                  <Radio value="yes" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">Yes</Text>
                   </Radio>
                 </Box>
@@ -101,12 +102,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("borewell", "no")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="no" colorScheme="cyan" size="md">
+                  <Radio value="no" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">No</Text>
                   </Radio>
                 </Box>
@@ -139,12 +141,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("trees", "yes")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="yes" colorScheme="cyan" size="md">
+                  <Radio value="yes" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">Yes</Text>
                   </Radio>
                 </Box>
@@ -157,12 +160,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("trees", "no")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="no" colorScheme="cyan" size="md">
+                  <Radio value="no" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">No</Text>
                   </Radio>
                 </Box>
@@ -195,12 +199,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("waterTank", "yes")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="yes" colorScheme="cyan" size="md">
+                  <Radio value="yes" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">Yes</Text>
                   </Radio>
                 </Box>
@@ -213,12 +218,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("waterTank", "no")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="no" colorScheme="cyan" size="md">
+                  <Radio value="no" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">No</Text>
                   </Radio>
                 </Box>
@@ -251,12 +257,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("septicTank", "yes")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="yes" colorScheme="cyan" size="md">
+                  <Radio value="yes" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">Yes</Text>
                   </Radio>
                 </Box>
@@ -269,12 +276,13 @@ export default function ExistingSiteElements({
                   borderRadius="8px"
                   transition="all 0.2s ease"
                   cursor="pointer"
+                  onClick={() => handleChange("septicTank", "no")}
                   _hover={{
                     borderColor: "cyan.300",
                     bg: "cyan.50",
                   }}
                 >
-                  <Radio value="no" colorScheme="cyan" size="md">
+                  <Radio value="no" colorScheme="cyan" size="md" pointerEvents="none">
                     <Text fontSize="13px" fontWeight="500" color="gray.700">No</Text>
                   </Radio>
                 </Box>

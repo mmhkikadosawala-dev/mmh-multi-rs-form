@@ -74,7 +74,6 @@ export default function Step3Peripheries({ formData, setFormData, onNext, onSubm
             transform="translate(-50%, -50%)"
             src={CompassImage}
             width="170px"
-            height="170px"
             zIndex={10}
           />
 

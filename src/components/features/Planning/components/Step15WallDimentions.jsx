@@ -7,7 +7,10 @@ import {
   Box,
   Image,
   SimpleGrid,
+  Badge,
+  Icon,
 } from "@chakra-ui/react";
+import { FaHome, FaDoorClosed } from "react-icons/fa";
 
 import wallDimentions4inch from "../../../../assets/Planning/WallDimentions/walldimentionsimages/wallDimentions4inch.png";
 import wallDimentions5inch from "../../../../assets/Planning/WallDimentions/walldimentionsimages/wallDimentions5inch.png";
@@ -16,13 +19,19 @@ import wallDimentions8inch from "../../../../assets/Planning/WallDimentions/wall
 import wallDimentions9inch from "../../../../assets/Planning/WallDimentions/walldimentionsimages/wallDimentions9inch.png";
 import wallDimentions10inch from "../../../../assets/Planning/WallDimentions/walldimentionsimages/wallDimentions10inch.png";
 
-const wallOptions = [
-  { value: "4", image: wallDimentions4inch, label: "4 inches" },
-  { value: "5", image: wallDimentions5inch, label: "5 inches" },
-  { value: "6", image: wallDimentions6inch, label: "6 inches" },
-  { value: "8", image: wallDimentions8inch, label: "8 inches" },
-  { value: "9", image: wallDimentions9inch, label: "9 inches" },
-  { value: "10", image: wallDimentions10inch, label: "10 inches" },
+const externalWallOptions = [
+  { value: "4", image: wallDimentions4inch, label: "4\"", fullLabel: "4 inches" },
+  { value: "5", image: wallDimentions5inch, label: "5\"", fullLabel: "5 inches" },
+  { value: "6", image: wallDimentions6inch, label: "6\"", fullLabel: "6 inches" },
+  { value: "8", image: wallDimentions8inch, label: "8\"", fullLabel: "8 inches" },
+  { value: "9", image: wallDimentions9inch, label: "9\"", fullLabel: "9 inches" },
+  { value: "10", image: wallDimentions10inch, label: "10\"", fullLabel: "10 inches" },
+];
+
+const internalWallOptions = [
+  { value: "4", image: wallDimentions4inch, label: "4\"", fullLabel: "4 inches" },
+  { value: "5", image: wallDimentions5inch, label: "5\"", fullLabel: "5 inches" },
+  { value: "6", image: wallDimentions6inch, label: "6\"", fullLabel: "6 inches" },
 ];
 
 export default function StepWallDimensions({
@@ -80,92 +89,233 @@ export default function StepWallDimensions({
           },
         }}
       >
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={5} align="stretch">
           {/* Heading */}
-          <Text fontWeight="600" color="gray.700" fontSize="16px" mb={0} letterSpacing="-0.01em">
-            Wall Dimensions
-          </Text>
-
-          {/* External Wall Thickness Selection */}
-          <Box>
-            <Text fontWeight="600" fontSize="14px" mb={3} color="gray.700">
-              External Wall Thickness
+          <Box textAlign="center">
+            <Text fontWeight="700" color="gray.800" fontSize="18px" mb={1}>
+              Wall Dimensions
             </Text>
-            <SimpleGrid columns={3} spacing={3}>
-              {wallOptions.map((option) => (
+            <Text fontSize="13px" color="gray.500">
+              Select wall thickness for external and internal walls
+            </Text>
+          </Box>
+
+          {/* External Wall Thickness Section */}
+          <Box
+            bg="white"
+            borderRadius="16px"
+            border="1px solid"
+            borderColor="gray.200"
+            p={4}
+            boxShadow="0 2px 8px rgba(0,0,0,0.04)"
+            position="relative"
+            overflow="hidden"
+          >
+            {/* Decorative gradient */}
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              h="4px"
+              bgGradient="linear(to-r, green.400, teal.400)"
+            />
+
+            <Flex align="center" justify="space-between" mb={3}>
+              <Flex align="center" gap={2}>
+                <Box
+                  bg="green.100"
+                  p={2}
+                  borderRadius="8px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Icon as={FaHome} color="green.600" boxSize="16px" />
+                </Box>
+                <Text fontWeight="600" fontSize="15px" color="gray.700">
+                  External Wall
+                </Text>
+              </Flex>
+              {externalWall && (
+                <Badge colorScheme="green" fontSize="11px" borderRadius="full" px={2}>
+                  {externalWall}" Selected
+                </Badge>
+              )}
+            </Flex>
+
+            <SimpleGrid columns={3} spacing={2}>
+              {externalWallOptions.map((option) => (
                 <Box
                   key={`external-${option.value}`}
                   onClick={() => handleChange("externalWallThickness", option.value)}
                   cursor="pointer"
+                  position="relative"
                   border="2px solid"
-                  borderColor={externalWall === option.value ? "cyan.500" : "gray.200"}
-                  bg={externalWall === option.value ? "cyan.50" : "white"}
-                  borderRadius="10px"
+                  borderColor={externalWall === option.value ? "green.500" : "gray.200"}
+                  bg={externalWall === option.value ? "green.50" : "white"}
+                  borderRadius="12px"
                   p={2}
                   transition="all 0.2s ease"
                   _hover={{
-                    borderColor: "cyan.400",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    borderColor: "green.400",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                   }}
                 >
+                  {externalWall === option.value && (
+                    <Box
+                      position="absolute"
+                      top="-1"
+                      right="-1"
+                      bg="green.500"
+                      color="white"
+                      borderRadius="full"
+                      w="20px"
+                      h="20px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      fontSize="12px"
+                      fontWeight="bold"
+                    >
+                      ✓
+                    </Box>
+                  )}
                   <Image
                     src={option.image}
-                    alt={option.label}
+                    alt={option.fullLabel}
                     width="100%"
-                    height="80px"
+                    height="60px"
                     objectFit="contain"
-                    mb={1}
+                    mb={2}
                   />
                   <Text
                     textAlign="center"
-                    fontSize="12px"
-                    fontWeight="600"
-                    color={externalWall === option.value ? "cyan.700" : "gray.600"}
+                    fontSize="13px"
+                    fontWeight="700"
+                    color={externalWall === option.value ? "green.700" : "gray.700"}
                   >
                     {option.label}
+                  </Text>
+                  <Text
+                    textAlign="center"
+                    fontSize="9px"
+                    fontWeight="500"
+                    color={externalWall === option.value ? "green.600" : "gray.500"}
+                  >
+                    {option.fullLabel}
                   </Text>
                 </Box>
               ))}
             </SimpleGrid>
           </Box>
 
-          {/* Internal Wall Thickness Selection */}
-          <Box>
-            <Text fontWeight="600" fontSize="14px" mb={3} color="gray.700">
-              Internal Wall Thickness
-            </Text>
-            <SimpleGrid columns={3} spacing={3}>
-              {wallOptions.map((option) => (
+          {/* Internal Wall Thickness Section */}
+          <Box
+            bg="white"
+            borderRadius="16px"
+            border="1px solid"
+            borderColor="gray.200"
+            p={4}
+            boxShadow="0 2px 8px rgba(0,0,0,0.04)"
+            position="relative"
+            overflow="hidden"
+          >
+            {/* Decorative gradient */}
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              h="4px"
+              bgGradient="linear(to-r, blue.400, purple.400)"
+            />
+
+            <Flex align="center" justify="space-between" mb={3}>
+              <Flex align="center" gap={2}>
+                <Box
+                  bg="blue.100"
+                  p={2}
+                  borderRadius="8px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Icon as={FaDoorClosed} color="blue.600" boxSize="16px" />
+                </Box>
+                <Text fontWeight="600" fontSize="15px" color="gray.700">
+                  Internal Wall
+                </Text>
+              </Flex>
+              {internalWall && (
+                <Badge colorScheme="blue" fontSize="11px" borderRadius="full" px={2}>
+                  {internalWall}" Selected
+                </Badge>
+              )}
+            </Flex>
+
+            <SimpleGrid columns={3} spacing={2}>
+              {internalWallOptions.map((option) => (
                 <Box
                   key={`internal-${option.value}`}
                   onClick={() => handleChange("internalWallThickness", option.value)}
                   cursor="pointer"
+                  position="relative"
                   border="2px solid"
-                  borderColor={internalWall === option.value ? "cyan.500" : "gray.200"}
-                  bg={internalWall === option.value ? "cyan.50" : "white"}
-                  borderRadius="10px"
+                  borderColor={internalWall === option.value ? "blue.500" : "gray.200"}
+                  bg={internalWall === option.value ? "blue.50" : "white"}
+                  borderRadius="12px"
                   p={2}
                   transition="all 0.2s ease"
                   _hover={{
-                    borderColor: "cyan.400",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    borderColor: "blue.400",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                   }}
                 >
+                  {internalWall === option.value && (
+                    <Box
+                      position="absolute"
+                      top="-1"
+                      right="-1"
+                      bg="blue.500"
+                      color="white"
+                      borderRadius="full"
+                      w="20px"
+                      h="20px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      fontSize="12px"
+                      fontWeight="bold"
+                    >
+                      ✓
+                    </Box>
+                  )}
                   <Image
                     src={option.image}
-                    alt={option.label}
+                    alt={option.fullLabel}
                     width="100%"
-                    height="80px"
+                    height="60px"
                     objectFit="contain"
-                    mb={1}
+                    mb={2}
                   />
                   <Text
                     textAlign="center"
-                    fontSize="12px"
-                    fontWeight="600"
-                    color={internalWall === option.value ? "cyan.700" : "gray.600"}
+                    fontSize="13px"
+                    fontWeight="700"
+                    color={internalWall === option.value ? "blue.700" : "gray.700"}
                   >
                     {option.label}
+                  </Text>
+                  <Text
+                    textAlign="center"
+                    fontSize="9px"
+                    fontWeight="500"
+                    color={internalWall === option.value ? "blue.600" : "gray.500"}
+                  >
+                    {option.fullLabel}
                   </Text>
                 </Box>
               ))}
@@ -183,15 +333,18 @@ export default function StepWallDimensions({
           color="cyan.600"
           border="1px solid"
           borderColor="cyan.500"
-          borderRadius="6px"
+          borderRadius="8px"
           minW="100px"
-          h="40px"
-          fontWeight="500"
+          h="42px"
+          fontWeight="600"
           fontSize="14px"
           _hover={{
             bg: "cyan.50",
             borderColor: "cyan.600",
+            transform: "translateY(-1px)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
+          transition="all 0.2s ease"
         >
           ← Previous
         </Button>
@@ -203,20 +356,24 @@ export default function StepWallDimensions({
           bg="cyan.500"
           color="white"
           border="none"
-          borderRadius="6px"
+          borderRadius="8px"
           minW="100px"
-          h="40px"
-          fontWeight="500"
+          h="42px"
+          fontWeight="600"
           fontSize="14px"
           ml="auto"
           _hover={{
             bg: "cyan.600",
+            transform: "translateY(-1px)",
+            boxShadow: "0 4px 12px rgba(6, 182, 212, 0.3)",
           }}
           _disabled={{
             bg: "gray.300",
             color: "gray.500",
             cursor: "not-allowed",
+            transform: "none",
           }}
+          transition="all 0.2s ease"
         >
           {isLastStep ? "Submit" : "Next →"}
         </Button>
