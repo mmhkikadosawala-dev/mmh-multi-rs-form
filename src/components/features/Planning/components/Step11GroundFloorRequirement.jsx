@@ -16,7 +16,7 @@ import {
   HStack,
   Circle,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FloorRequirement from "../../../../assets/Planning/FloorRequirement/Rectangle389.png";
 
 // Additional spaces list
@@ -37,12 +37,18 @@ export default function Step11FloorSpaceRequirements({
   onSubmit,
 }) {
   const floorsCount = (() => {
-    if (typeof formData?.numberOfFloors === "string") {
+    if (!formData?.numberOfFloors) return 1;
+    
+    if (typeof formData.numberOfFloors === "string") {
       if (formData.numberOfFloors.includes("+")) {
-        const additional = parseInt(formData.numberOfFloors.match(/\d+/)[0]) || 0;
+        const match = formData.numberOfFloors.match(/\d+/);
+        const additional = match ? parseInt(match[0]) : 0;
         return 1 + additional;
+      } else if (formData.numberOfFloors === "ground") {
+        return 1;
       } else {
-        return parseInt(formData.numberOfFloors.match(/\d+/)[0]) || 1;
+        const match = formData.numberOfFloors.match(/\d+/);
+        return match ? parseInt(match[0]) : 1;
       }
     }
     return 1;
@@ -63,7 +69,41 @@ export default function Step11FloorSpaceRequirements({
         }))
   );
 
-  const current = floorsData[activeFloor];
+  // Sync floorsData when floorsCount changes
+  useEffect(() => {
+    if (floorsData.length !== floorsCount) {
+      const newFloorsData = Array(floorsCount)
+        .fill()
+        .map((_, idx) => 
+          floorsData[idx] ?? {
+            masterBedrooms: "",
+            withAttached: false,
+            kitchen: "",
+            kitchenType: "",
+            additionalSpaces: [],
+            otherSpaces: ""
+          }
+        );
+      setFloorsData(newFloorsData);
+    }
+  }, [floorsCount]);
+
+  // Reset activeFloor if out of bounds
+  useEffect(() => {
+    if (activeFloor >= floorsCount) {
+      setActiveFloor(0);
+    }
+  }, [activeFloor, floorsCount]);
+
+  // Safe access to current floor data
+  const current = floorsData[activeFloor] ?? {
+    masterBedrooms: "",
+    withAttached: false,
+    kitchen: "",
+    kitchenType: "",
+    additionalSpaces: [],
+    otherSpaces: ""
+  };
 
   const updateFloorField = (field, value) => {
     const updated = [...floorsData];
@@ -272,7 +312,6 @@ export default function Step11FloorSpaceRequirements({
                   </Radio>
                 </Flex>
               </RadioGroup>
-              {/* Image */}
               <Image
                 src={FloorRequirement}
                 alt="kitchen"

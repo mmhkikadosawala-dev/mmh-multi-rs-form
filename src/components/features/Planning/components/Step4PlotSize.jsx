@@ -27,7 +27,6 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
   
   const handleWidthInchesChange = e => {
     const value = e.target.value;
-    // Only allow values between 0 and 11
     if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
       setFormData({ 
         ...formData, 
@@ -43,7 +42,6 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
   
   const handleDepthInchesChange = e => {
     const value = e.target.value;
-    // Only allow values between 0 and 11
     if (value === '' || (Number(value) >= 0 && Number(value) <= 11)) {
       setFormData({ 
         ...formData, 
@@ -56,7 +54,21 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
   const backImage = getSideImage("back", formData.peripheries);
   const leftImage = getSideImage("left", formData.peripheries);
 
-  const handleAction = isLastStep ? onSubmit : onNext;
+  // Validation: Check if both width and depth feet are provided
+  const isValid = () => {
+    const widthFeet = parseFloat(formData.size?.widthFeet);
+    const depthFeet = parseFloat(formData.size?.depthFeet);
+    return widthFeet > 0 && depthFeet > 0;
+  };
+
+  const handleAction = () => {
+    if (!isValid()) return; // Don't proceed if validation fails
+    if (isLastStep) {
+      onSubmit();
+    } else {
+      onNext();
+    }
+  };
 
   return (
     <Box
@@ -72,7 +84,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
     >
       {/* Content Area */}
       <Box>
-        {/* Top Input Section - Vertical Stack */}
+        {/* Top Input Section */}
         <Box
           mb={5}
           bg="white"
@@ -81,7 +93,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           border="1px solid"
           borderColor="gray.200"
         >
-          {/* Plot Width - Top */}
+          {/* Plot Width */}
           <Box mb={4}>
             <Text 
               fontSize="13px" 
@@ -90,7 +102,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
               fontWeight="600"
               letterSpacing="-0.01em"
             >
-              Plot Width
+              Plot Width <Text as="span" color="red.500">*</Text>
             </Text>
             <Flex align="center" gap={2} justify="center">
               <Input
@@ -143,7 +155,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
             </Flex>
           </Box>
 
-          {/* Plot Depth - Bottom */}
+          {/* Plot Depth */}
           <Box>
             <Text 
               fontSize="13px" 
@@ -152,7 +164,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
               fontWeight="600"
               letterSpacing="-0.01em"
             >
-              Plot Depth
+              Plot Depth <Text as="span" color="red.500">*</Text>
             </Text>
             <Flex align="center" gap={2} justify="center">
               <Input
@@ -314,6 +326,7 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
         
         <Button
           onClick={handleAction}
+          isDisabled={!isValid()}
           variant="solid"
           bg="cyan.500"
           color="white"
@@ -326,6 +339,12 @@ export default function Step4PlotSize({ formData, setFormData, onNext, onSubmit,
           ml="auto"
           _hover={{
             bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
+            opacity: 0.6,
           }}
         >
           {isLastStep ? 'Submit' : 'Next →'}

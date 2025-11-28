@@ -9,9 +9,12 @@ import {
   HStack,
   InputGroup,
   InputRightAddon,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import CompassImage from "../../../../assets/Planning/Compass/illustration-compass 1.png";
+
+const svgSize = 280;
 
 function toPosNum(v, fallback) {
   const n = parseFloat(v);
@@ -39,6 +42,24 @@ function clampOffset(offset, front, back, left, right, minSeparation) {
   return Math.max(minO, Math.min(maxO, offset));
 }
 
+// angle at point B between BA and BC (in degrees)
+function angleBetween(A, B, C) {
+  const v1x = A.x - B.x;
+  const v1y = A.y - B.y;
+  const v2x = C.x - B.x;
+  const v2y = C.y - B.y;
+
+  const dot = v1x * v2x + v1y * v2y;
+  const mag1 = Math.hypot(v1x, v1y);
+  const mag2 = Math.hypot(v2x, v2y);
+  if (!mag1 || !mag2) return 0;
+
+  let cosTheta = dot / (mag1 * mag2);
+  cosTheta = Math.max(-1, Math.min(1, cosTheta));
+  const rad = Math.acos(cosTheta);
+  return (rad * 180) / Math.PI;
+}
+
 export default function Step4PlotSizeNonRectangular({
   formData,
   setFormData,
@@ -47,8 +68,6 @@ export default function Step4PlotSizeNonRectangular({
   onBack,
   isLastStep,
 }) {
-  const svgSize = 280;
-
   const handleFrontChange = (e) =>
     setFormData({
       ...formData,
@@ -77,7 +96,7 @@ export default function Step4PlotSizeNonRectangular({
   const [currentScale, setCurrentScale] = useState(4);
   const [viewBox, setViewBox] = useState("0 0 400 400");
 
-  // Initialize default values only once
+  // defaults once
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -90,7 +109,7 @@ export default function Step4PlotSizeNonRectangular({
         offset: prev.size?.offset ?? 0,
       },
     }));
-  }, [setFormData]); // Now includes setFormData
+  }, [setFormData]);
 
   useEffect(() => {
     const front = toPosNum(formData.size?.front, 70);
@@ -184,7 +203,6 @@ export default function Step4PlotSizeNonRectangular({
         new_offset = points.tl.x + back / 2;
       }
 
-      // Allow full free movement - no clamping on release
       const bl_x = -front / 2;
       const br_x = front / 2;
       const tl_x = -back / 2 + new_offset;
@@ -214,40 +232,43 @@ export default function Step4PlotSizeNonRectangular({
     setInitialDragX(null);
   }, [dragging, points, formData, setFormData]);
 
-  const handleMouseMove = useCallback((e) => {
-    if (!dragging || !points || initialDragX === null) return;
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!dragging || !points || initialDragX === null) return;
 
-    const svg_rect = svgRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - svg_rect.left;
-    const logical_mouse_x = (mouseX - points.svgCenterX) / currentScale + points.centerX;
+      const svg_rect = svgRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - svg_rect.left;
+      const logical_mouse_x = (mouseX - points.svgCenterX) / currentScale + points.centerX;
 
-    const front = toPosNum(formData.size?.front, 70);
-    const back = toPosNum(formData.size?.back, 50);
-    const left = toPosNum(formData.size?.left, 40);
-    const right = toPosNum(formData.size?.right, 50);
+      const front = toPosNum(formData.size?.front, 70);
+      const back = toPosNum(formData.size?.back, 50);
+      const left = toPosNum(formData.size?.left, 40);
+      const right = toPosNum(formData.size?.right, 50);
 
-    const delta = logical_mouse_x - initialDragX;
-    const current_offset = parseFloat(formData.size?.offset) || 0;
-    let proposed_offset = current_offset + delta;
+      const delta = logical_mouse_x - initialDragX;
+      const current_offset = parseFloat(formData.size?.offset) || 0;
+      let proposed_offset = current_offset + delta;
 
-    const minSeparation = 1;
-    const clamped_offset = clampOffset(proposed_offset, front, back, left, right, minSeparation);
+      const minSeparation = 1;
+      const clamped_offset = clampOffset(proposed_offset, front, back, left, right, minSeparation);
 
-    const new_tl_x = clamped_offset - back / 2;
-    const new_tr_x = clamped_offset + back / 2;
+      const new_tl_x = clamped_offset - back / 2;
+      const new_tr_x = clamped_offset + back / 2;
 
-    const new_dx_left = new_tl_x - points.bl.x;
-    const new_dx_right = new_tr_x - points.br.x;
+      const new_dx_left = new_tl_x - points.bl.x;
+      const new_dx_right = new_tr_x - points.br.x;
 
-    const new_h_left = Math.sqrt(Math.max(minSeparation ** 2, left ** 2 - new_dx_left ** 2));
-    const new_h_right = Math.sqrt(Math.max(minSeparation ** 2, right ** 2 - new_dx_right ** 2));
+      const new_h_left = Math.sqrt(Math.max(minSeparation ** 2, left ** 2 - new_dx_left ** 2));
+      const new_h_right = Math.sqrt(Math.max(minSeparation ** 2, right ** 2 - new_dx_right ** 2));
 
-    setPoints({
-      ...points,
-      tl: { x: new_tl_x, y: new_h_left },
-      tr: { x: new_tr_x, y: new_h_right },
-    });
-  }, [dragging, points, initialDragX, currentScale, formData]);
+      setPoints({
+        ...points,
+        tl: { x: new_tl_x, y: new_h_left },
+        tr: { x: new_tr_x, y: new_h_right },
+      });
+    },
+    [dragging, points, initialDragX, currentScale, formData]
+  );
 
   const lineMidpoint = (p1, p2) => ({
     x: (p1.x + p2.x) / 2,
@@ -478,6 +499,24 @@ export default function Step4PlotSizeNonRectangular({
 
   const handleAction = isLastStep ? onSubmit : onNext;
 
+  // All 4 corner angles
+  let angleBL = 0;
+  let angleBR = 0;
+  let angleTL = 0;
+  let angleTR = 0;
+  if (points) {
+    const { bl, br, tl, tr } = points;
+
+    // BL between left (BL→TL) and front (BL→BR)
+    angleBL = angleBetween(tl, bl, br);
+    // BR between front (BR→BL) and right (BR→TR)
+    angleBR = angleBetween(bl, br, tr);
+    // TL between left (TL→BL) and back (TL→TR)
+    angleTL = angleBetween(bl, tl, tr);
+    // TR between back (TR→TL) and right (TR→BR)
+    angleTR = angleBetween(tl, tr, br);
+  }
+
   return (
     <Box
       h="600px"
@@ -490,41 +529,28 @@ export default function Step4PlotSizeNonRectangular({
       px={4}
       py={6}
     >
-      {/* Scrollable Content Area */}
       <Box
         flex="1"
         overflowY="auto"
         overflowX="hidden"
         pr={2}
         css={{
-          "&::-webkit-scrollbar": {
-            width: "6px",
-          },
-          "&::-webkit-scrollbar-track": {
-            background: "#f1f1f1",
-            borderRadius: "10px",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: "#cbd5e0",
-            borderRadius: "10px",
-          },
-          "&::-webkit-scrollbar-thumb:hover": {
-            background: "#a0aec0",
-          },
+          "&::-webkit-scrollbar": { width: "6px" },
+          "&::-webkit-scrollbar-track": { background: "#f1f1f1", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb": { background: "#cbd5e0", borderRadius: "10px" },
+          "&::-webkit-scrollbar-thumb:hover": { background: "#a0aec0" },
         }}
       >
         <VStack spacing={4} align="stretch">
-          {/* Title */}
           <Text fontWeight="600" color="gray.700" fontSize="17px" letterSpacing="-0.01em">
             Plot Dimensions
           </Text>
 
-          {/* Instructions */}
           <Text fontSize="13px" color="gray.600" textAlign="center" mb={1}>
             Enter dimensions below or drag the top corners to adjust shape
           </Text>
 
-          {/* Input Controls */}
+          {/* Inputs */}
           <Box bg="white" p={4} borderRadius="12px" border="1px solid" borderColor="gray.200">
             <VStack spacing={3}>
               <HStack spacing={3} width="100%">
@@ -622,26 +648,60 @@ export default function Step4PlotSizeNonRectangular({
             {renderDiagram()}
           </Box>
 
-          {/* Diagonal Measurements */}
+          {/* Diagonals + Angles */}
           {points && (
-            <Box bg="purple.50" p={3} borderRadius="8px" border="1px solid" borderColor="purple.200">
-              <Text fontSize="11px" fontWeight="600" color="purple.700" mb={1.5}>
-                Diagonal Measurements:
-              </Text>
-              <HStack spacing={3} fontSize="11px" color="purple.700">
-                <Text>
-                  BL→TR: <strong>{lineLength(points.bl, points.tr)}ft</strong>
+            <>
+              <Box bg="purple.50" p={3} borderRadius="8px" border="1px solid" borderColor="purple.200">
+                <Text fontSize="11px" fontWeight="600" color="purple.700" mb={1.5}>
+                  Diagonal Measurements:
                 </Text>
-                <Text>
-                  BR→TL: <strong>{lineLength(points.br, points.tl)}ft</strong>
+                <HStack spacing={3} fontSize="11px" color="purple.700">
+                  <Text>
+                    BL → TR: <strong>{lineLength(points.bl, points.tr)} ft</strong>
+                  </Text>
+                  <Text>
+                    BR → TL: <strong>{lineLength(points.br, points.tl)} ft</strong>
+                  </Text>
+                </HStack>
+              </Box>
+
+              <Box bg="blue.50" p={3} borderRadius="8px" border="1px solid" borderColor="blue.200">
+                <Text fontSize="11px" fontWeight="600" color="blue.700" mb={1.5}>
+                  Corner Angles (approx):
                 </Text>
-              </HStack>
-            </Box>
+                <SimpleGrid columns={2} spacing={2} fontSize="11px" color="blue.800">
+                  <Box>
+                    <Text fontWeight="600">Bottom-Left corner</Text>
+                    <Text>
+                      Between Left & Front: <strong>{angleBL.toFixed(1)}°</strong>
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="600">Bottom-Right corner</Text>
+                    <Text>
+                      Between Front & Right: <strong>{angleBR.toFixed(1)}°</strong>
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="600">Top-Left corner</Text>
+                    <Text>
+                      Between Left & Back: <strong>{angleTL.toFixed(1)}°</strong>
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="600">Top-Right corner</Text>
+                    <Text>
+                      Between Back & Right: <strong>{angleTR.toFixed(1)}°</strong>
+                    </Text>
+                  </Box>
+                </SimpleGrid>
+              </Box>
+            </>
           )}
         </VStack>
       </Box>
 
-      {/* Fixed Navigation Buttons */}
+      {/* Navigation */}
       <Flex justify="space-between" gap={3} mt={4} flexShrink={0}>
         <Button
           onClick={onBack}
@@ -660,7 +720,7 @@ export default function Step4PlotSizeNonRectangular({
             borderColor: "cyan.600",
           }}
         >
-          Previous
+          ← Previous
         </Button>
 
         <Button
@@ -679,7 +739,7 @@ export default function Step4PlotSizeNonRectangular({
             bg: "cyan.600",
           }}
         >
-          {isLastStep ? "Submit" : "Next"}
+          {isLastStep ? "Submit" : "Next →"}
         </Button>
       </Flex>
     </Box>

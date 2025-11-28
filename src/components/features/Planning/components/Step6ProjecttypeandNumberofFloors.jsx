@@ -56,7 +56,19 @@ export default function Step3ProjectTypeAndFloors({
     });
   };
 
-  const handleAction = isLastStep ? onSubmit : onNext;
+  // Validation: Check if both project type and floors are selected
+  const isValid = () => {
+    return formData.projectType && formData.numberOfFloors;
+  };
+
+  const handleAction = () => {
+    if (!isValid()) return; // Don't proceed if validation fails
+    if (isLastStep) {
+      onSubmit();
+    } else {
+      onNext();
+    }
+  };
 
   return (
     <Box
@@ -104,7 +116,7 @@ export default function Step3ProjectTypeAndFloors({
               color="gray.700"
               letterSpacing="-0.01em"
             >
-              Project Type
+              Project Type <Text as="span" color="red.500">*</Text>
             </Text>
             
             <Box 
@@ -173,7 +185,7 @@ export default function Step3ProjectTypeAndFloors({
               color="gray.700"
               letterSpacing="-0.01em"
             >
-              Number of Floors
+              Number of Floors <Text as="span" color="red.500">*</Text>
             </Text>
             
             <Box 
@@ -245,6 +257,7 @@ export default function Step3ProjectTypeAndFloors({
         
         <Button
           onClick={handleAction}
+          isDisabled={!isValid()}
           variant="solid"
           bg="cyan.500"
           color="white"
@@ -257,6 +270,12 @@ export default function Step3ProjectTypeAndFloors({
           ml="auto"
           _hover={{
             bg: "cyan.600",
+          }}
+          _disabled={{
+            bg: "gray.300",
+            color: "gray.500",
+            cursor: "not-allowed",
+            opacity: 0.6,
           }}
         >
           {isLastStep ? 'Submit' : 'Next →'}
